@@ -1,4 +1,9 @@
-import { parse_command, Command, SYNC_MARKER } from "./fields.ts";
+import {
+  parse_command,
+  response_length,
+  Command,
+  SYNC_MARKER,
+} from "./fields.ts";
 import { Response } from "./response.ts";
 import { ParseResult } from "./parse_types.ts";
 
@@ -55,9 +60,9 @@ export class ResponseDecoder {
         const command = parse_command(command_byte);
 
         if (command) {
-          const response_length = this.response_length(command);
-          if (bytes.length >= sop_index + response_length) {
-            const eop_index = sop_index + response_length;
+          const length = response_length(command);
+          if (bytes.length >= sop_index + length) {
+            const eop_index = sop_index + length;
             const response_bytes = bytes.slice(sop_index, eop_index);
             const response = this.parse_response_bounded(
               command,
@@ -82,22 +87,6 @@ export class ResponseDecoder {
   }
 
   flush(_controller: TransformStreamDefaultController) {}
-
-  response_length(command: Command): number {
-    const sync_len = 1;
-    const command_len = 1;
-    const data_len = 4;
-    const crc_len = 1;
-
-    switch (command) {
-      case "Read": {
-        return sync_len + command_len + data_len + crc_len;
-      }
-      case "Write": {
-        return sync_len + command_len + crc_len;
-      }
-    }
-  }
 
   parse_response_bounded(command: Command, bytes: number[]): Response {
     switch (command) {

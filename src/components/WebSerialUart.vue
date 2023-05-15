@@ -7,24 +7,43 @@ import { RequestEncoder } from '../request_encoder.ts';
 import { ResponseDecoder } from '../response_decoder.ts';
 import { ref } from 'vue';
 
+interface Connection {
+  port: SerialPort;
+  reader: any;
+  writer: any;
+}
+
+type NullableConnection = Connection | null;
+
 const log = ref("");
 const addr = ref("0x00000000");
 const data = ref("0x55555555");
-const port = ref<SerialPort | null>(null);
+const connection = ref<NullableConnection>(null);
 const isConnected = ref(false);
 
 async function connect() {
-  port.value = await navigator.serial.requestPort();
-  await port.value.open({
+  const port = await navigator.serial.requestPort();
+  await port.open({
     baudRate: 115200,
   });
+
+  const reader = port.readable
+    .pipeThrough(new TransformStream(new ResponseDecoder()))
+    .getReader();
+  const writer = port.writable.getWriter();
+
+  connection.value = {
+    port: port,
+    reader: reader,
+    writer: writer,
+  };
   logMessage("Connected");
   isConnected.value = true;
 }
 
 async function disconnect() {
-  if (port.value) {
-    await port.value.close();
+  if (connection.value) {
+    await connection.value.port.close();
     logMessage("Disconnected");
   }
   isConnected.value = false;
@@ -60,24 +79,17 @@ async function send_request(request: Request) {
     request.bytes = encoder.encode(request);
     logMessage(requestToString(request));
 
-    if (port.value && port.value.writable) {
-      const writer = port.value.writable.getWriter();
-      await writer.write(request.bytes);
-      writer.releaseLock();
+    if (connection.value) {
+      await connection.value.writer.write(request.bytes);
     }
 
-    if (port.value && port.value.readable) {
-      const reader = port.value.readable
-        .pipeThrough(new TransformStream(new ResponseDecoder()))
-        .getReader();
-
-      const {value} = await reader.read();
+    if (connection.value) {
+      const {value} = await connection.value.reader.read();
       const response = value;
       if (response.command == "Read") {
         data.value = response.data;
       }
       logMessage(responseToString(response));
-      reader.releaseLock();
     }
 }
 
