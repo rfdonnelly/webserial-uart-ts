@@ -1,6 +1,6 @@
 import { parse_command, Command, SYNC_MARKER } from "./fields.ts";
 import { Response } from "./response.ts";
-import { ParseResult } from "./parse_types.ts"
+import { ParseResult } from "./parse_types.ts";
 
 export class ResponseDecoder {
   bytes: number[];
@@ -59,7 +59,10 @@ export class ResponseDecoder {
           if (bytes.length >= sop_index + response_length) {
             const eop_index = sop_index + response_length;
             const response_bytes = bytes.slice(sop_index, eop_index);
-            const response = this.parse_response_bounded(command, response_bytes);
+            const response = this.parse_response_bounded(
+              command,
+              response_bytes,
+            );
             return [bytes.slice(eop_index), response];
           } else {
             // Not enough bytes for a response
