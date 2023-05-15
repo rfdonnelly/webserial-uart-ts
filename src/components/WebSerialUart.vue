@@ -117,16 +117,18 @@ function responseToString(response: Response) {
 </script>
 
 <template>
-  <div class="flex flex-row gap-4 py-10">
+  <div class="flex flex-row gap-4 py-10 justify-center">
     <button v-if="!isConnected" type="button"
       class="
         bg-green-500 rounded-lg p-2
+        focus:outline-green-700
       "
       @click="connect"
     >Connect</button>
     <button v-if="isConnected" type="button"
       class="
         bg-red-500 rounded-lg p-2
+        focus:outline-red-700
       "
       @click="disconnect"
     >Disconnect</button>
@@ -136,16 +138,18 @@ function responseToString(response: Response) {
         <TextInputLabel class="w-1/2" label="Address" v-model="addr"/>
         <TextInputLabel class="w-1/2" label="Data" v-model="data"/>
       </div>
-      <div class="flex flex-row">
+      <div class="flex flex-row justify-end">
         <button type="button"
           class="
             p-2 bg-sky-500 rounded-l-lg rounded-r-none
+            focus:outline-sky-700
           "
           @click="send_write"
         >W</button>
         <button type="button"
           class="
             p-2 bg-sky-500 rounded-l-none rounded-r-lg
+            focus:outline-sky-700
           "
           @click="send_read"
         >R</button>
