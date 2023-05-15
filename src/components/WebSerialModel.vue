@@ -52,7 +52,7 @@ async function connect() {
     switch (request.command) {
       case "Write":
         mem.set(request.addr, request.data);
-        memString.value = JSON.stringify(mem);
+        updateMemString(mem);
         await send_response(
           encoder,
           writer,
@@ -64,18 +64,29 @@ async function connect() {
 
         break;
       case "Read":
+        if (!mem.has(request.addr)) {
+          const data = Math.floor(Math.random() * 0xffffffff);
+          mem.set(request.addr, data);
+          updateMemString(mem);
+        }
         await send_response(
           encoder,
           writer,
         {
           command: "Read",
-          data: mem.get(request.addr) || Math.random(),
+          data: mem.get(request.addr) || 0,
           crc: 0,
         }
         );
         break;
     }
   }
+}
+
+function updateMemString(mem: Map<number, number>) {
+  memString.value = Array.from(mem.entries()).map(([a, b]) => {
+      return a.toString(16).padStart(8, "0") + ":" + b.toString(16).padStart(8, "0")
+      }).join("\n");
 }
 
 async function disconnect() {

@@ -1,8 +1,4 @@
-import {
-  command_value,
-  request_length,
-  SYNC_MARKER,
-} from "./fields.ts";
+import { command_value, request_length, SYNC_MARKER } from "./fields.ts";
 import { Request } from "./packets.ts";
 
 export class RequestEncoder {

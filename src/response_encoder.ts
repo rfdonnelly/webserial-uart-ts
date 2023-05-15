@@ -1,8 +1,4 @@
-import {
-  command_value,
-  response_length,
-  SYNC_MARKER,
-} from "./fields.ts";
+import { command_value, response_length, SYNC_MARKER } from "./fields.ts";
 import { Response } from "./packets.ts";
 
 export class ResponseEncoder {

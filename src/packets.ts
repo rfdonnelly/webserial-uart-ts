@@ -39,7 +39,12 @@ export function requestToString(request: Request): string {
     }
     case "Write": {
       const data = request.data.toString(16).padStart(8, "0");
-      const obj = { command: request.command, addr: addr, data: data, bytes: bytes };
+      const obj = {
+        command: request.command,
+        addr: addr,
+        data: data,
+        bytes: bytes,
+      };
       return JSON.stringify(obj).replaceAll(",", ", ");
     }
   }
@@ -63,9 +68,7 @@ export function responseToString(response: Response): string {
 function packetBytesToString(packet: Request | Response): string {
   if (packet.bytes !== undefined) {
     const array: Array<number> = Array.from(packet.bytes);
-    return array
-      .map(x => x.toString(16).padStart(2, "0"))
-      .join(" ");
+    return array.map((x) => x.toString(16).padStart(2, "0")).join(" ");
   } else {
     return "";
   }
