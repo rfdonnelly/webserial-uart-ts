@@ -16,6 +16,11 @@ async function connect() {
   await port.value.open({
     baudRate: 115200,
   });
+  logMessage("Connected");
+}
+
+function logMessage(message: string) {
+  log.value += timestamp() + " " + message + "\n";
 }
 
 async function send_write() {
@@ -35,11 +40,14 @@ async function send_read() {
   });
 }
 
+function timestamp() {
+  return new Date(Date.now()).toISOString();
+}
+
 async function send_request(request: Request) {
     const encoder = new RequestEncoder();
     request.bytes = encoder.encode(request);
-    log.value += new Date(Date.now()).toISOString() + " ";
-    log.value += requestToString(request) + "\n";
+    logMessage(requestToString(request));
 
     if (port.value && port.value.writeable) {
       const writer = port.value.writeable.getWriter();
@@ -57,8 +65,7 @@ async function send_request(request: Request) {
       if (response.command == "Read") {
         data.value = response.data;
       }
-      log.value += new Date(Date.now()).toISOString() + " ";
-      log.value += JSON.stringify(response) + "\n";
+      logMessage(responseToString(response));
       reader.releaseLock();
     }
 }

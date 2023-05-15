@@ -7,7 +7,7 @@
 </script>
 
 <template>
-    <div class="relative h-10 w-full min-w-[200px]">
+    <div class="relative h-full w-full min-w-[200px]">
     <textarea
       rows="12"
       class="
