@@ -10,6 +10,7 @@ const log = ref("");
 const addr = ref("0x00000000");
 const data = ref("0x55555555");
 const port = ref(null);
+const isConnected = ref(false);
 
 async function connect() {
   port.value = await navigator.serial.requestPort();
@@ -17,6 +18,15 @@ async function connect() {
     baudRate: 115200,
   });
   logMessage("Connected");
+  isConnected.value = true;
+}
+
+async function disconnect() {
+  if (port.value) {
+    await port.value.close();
+    logMessage("Disconnected");
+  }
+  isConnected.value = false;
 }
 
 function logMessage(message: string) {
@@ -108,12 +118,18 @@ function responseToString(response: Response) {
 
 <template>
   <div class="flex flex-row gap-4 py-10">
-    <button type="button"
+    <button v-if="!isConnected" type="button"
       class="
-        bg-sky-500 rounded-lg p-2
+        bg-green-500 rounded-lg p-2
       "
       @click="connect"
     >Connect</button>
+    <button v-if="isConnected" type="button"
+      class="
+        bg-red-500 rounded-lg p-2
+      "
+      @click="disconnect"
+    >Disconnect</button>
   </div>
     <div id="tx">
       <div class="flex flex-row py-2 gap-4">
