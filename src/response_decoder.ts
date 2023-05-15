@@ -116,12 +116,14 @@ export class ResponseDecoder {
                     command: command,
                     data: data,
                     crc: bytes[6],
+                    bytes: new Uint8Array(bytes),
                 };
             }
             case "Write": {
                 return {
                     command: command,
                     crc: bytes[2],
+                    bytes: new Uint8Array(bytes),
                 }
             }
         }

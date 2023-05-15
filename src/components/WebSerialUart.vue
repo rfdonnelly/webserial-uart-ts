@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import TextInputLabel from './TextInputLabel.vue';
+import TextAreaLabel from './TextAreaLabel.vue';
 import { Request } from '../request.ts';
 import { RequestEncoder } from '../request_encoder.ts';
 import { ResponseDecoder } from '../response_decoder.ts';
@@ -36,10 +37,9 @@ async function send_read() {
 
 async function send_request(request: Request) {
     const encoder = new RequestEncoder();
-    const bytes = encoder.encode(request);
-    log.value += new Date(Date.now()).toISOString() + "\n";
-    log.value += JSON.stringify(request) + "\n";
-    log.value += bytes + "\n";
+    request.bytes = encoder.encode(request);
+    log.value += new Date(Date.now()).toISOString() + " ";
+    log.value += requestToString(request) + "\n";
 
     if (port.value && port.value.writeable) {
       const writer = port.value.writeable.getWriter();
@@ -57,12 +57,46 @@ async function send_request(request: Request) {
       if (response.command == "Read") {
         data.value = response.data;
       }
-      log.value += new Date(Date.now()).toISOString() + "\n";
+      log.value += new Date(Date.now()).toISOString() + " ";
       log.value += JSON.stringify(response) + "\n";
       reader.releaseLock();
     }
 }
 
+function requestToString(request: Request) {
+  const bytes = Array.from(request.bytes)
+    .map(x => x.toString(16).padStart(2, "0"))
+    .join(" ");
+  const addr = request.addr.toString(16).padStart(8, "0");
+  switch (request.command) {
+    case "Read": {
+      const obj = { command: request.command, addr: addr, bytes: bytes };
+      return JSON.stringify(obj).replaceAll(",", ", ");
+    }
+    case "Write": {
+      const data = request.data.toString(16).padStart(8, "0");
+      const obj = { command: request.command, addr: addr, data: data, bytes: bytes };
+      return JSON.stringify(obj).replaceAll(",", ", ");
+    }
+  }
+}
+
+function responseToString(response: Response) {
+  const bytes = Array.from(request.bytes)
+    .map(x => x.toString(16).padStart(2, "0"))
+    .join(" ");
+  switch (request.command) {
+    case "Read": {
+      const data = request.data.toString(16).padStart(8, "0");
+      const obj = { command: request.command, data: data, bytes: bytes };
+      return JSON.stringify(obj).replaceAll(",", ", ");
+    }
+    case "Write": {
+      const obj = { command: request.command, bytes: bytes };
+      return JSON.stringify(obj).replaceAll(",", ", ");
+    }
+  }
+}
 </script>
 
 <template>
@@ -93,30 +127,6 @@ async function send_request(request: Request) {
           @click="send_read"
         >R</button>
       </div>
-      <div class="relative my-10">
-        <textarea
-          id="log"
-          rows="12"
-          class="
-            block
-            font-mono
-            w-full
-            border-0
-            outline-none
-            p-2
-          "
-        >{{ log }}</textarea>
-        <label
-          for="log"
-          class="
-            absolute
-            left-0
-            -top-3.5
-            text-sm
-          "
-        >
-          Log
-        </label>
-      </div>
+      <TextAreaLabel class="mt-10" label="Log" v-model="log"/>
     </div>
 </template>

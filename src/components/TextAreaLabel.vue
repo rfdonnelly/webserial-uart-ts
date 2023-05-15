@@ -8,17 +8,16 @@
 
 <template>
     <div class="relative h-10 w-full min-w-[200px]">
-    <input
+    <textarea
+      rows="12"
       class="
-        peer h-full w-full rounded-md border border-t-transparent bg-transparent px-3 py-2.5
+        peer w-full rounded-md border border-t-transparent bg-transparent px-3 py-2.5
         font-mono text-sm font-normal text-blue-gray-700 outline outline-0 transition-all
         focus:border-2 focus:border-blue-500 focus:border-t-transparent focus:outline-0
         disabled:border-0 disabled:bg-blue-gray-50
       "
-      placeholder=""
-      :value="props.modelValue"
       @input="$emit('update:modelValue', $event.target.value)"
-    />
+    >{{ props.modelValue }}</textarea>
     <label
       class="
         before:content[' '] after:content[' '] pointer-events-none

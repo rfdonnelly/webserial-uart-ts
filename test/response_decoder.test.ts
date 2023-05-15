@@ -15,7 +15,7 @@ it<Ctxt>('write', ({o}) => {
     ).toEqual(
         [
             [0x47],
-            { command: "Write", crc: 0x55 }
+            { command: "Write", crc: 0x55, bytes: new Uint8Array([0x47, 0x50, 0x55]) }
         ]
     );
 });
@@ -26,7 +26,12 @@ it<Ctxt>('read', ({o}) => {
     ).toEqual(
         [
             [0x47],
-            { command: "Read", data: 0x12345678, crc: 0x55 }
+            {
+              command: "Read",
+              data: 0x12345678,
+              crc: 0x55,
+              bytes: new Uint8Array([0x47, 0x30, 0x12, 0x34, 0x56, 0x78, 0x55]),
+            }
         ]
     );
 });
@@ -56,8 +61,13 @@ it<Ctxt>('multiple', ({o}) => {
         [
             [0x47],
             [
-                { command: "Write", crc: 0x55 },
-                { command: "Read", data: 0x12345678, crc: 0x55 },
+              { command: "Write", crc: 0x55, bytes: new Uint8Array([0x47, 0x50, 0x55]) },
+              {
+                command: "Read",
+                data: 0x12345678,
+                crc: 0x55,
+                bytes: new Uint8Array([0x47, 0x30, 0x12, 0x34, 0x56, 0x78, 0x55]),
+              },
             ]
         ]
     );
@@ -78,7 +88,7 @@ it<Ctxt>('stream', async ({o}) => {
     const {value, done } = await response_reader.read()
 
     expect(value).toEqual(
-        { command: "Write", crc: 0x55 }
+      { command: "Write", crc: 0x55, bytes: new Uint8Array([0x47, 0x50, 0x55]) }
     );
 
 });

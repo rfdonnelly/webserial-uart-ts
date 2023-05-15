@@ -5,4 +5,5 @@ export interface Request {
     addr: number,
     data: number,
     crc: number,
+    bytes?: Uint8Array,
 }
