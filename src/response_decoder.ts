@@ -1,7 +1,6 @@
-import { Command, CommandValue, SYNC_MARKER } from "./fields.ts";
+import { parse_command, Command, SYNC_MARKER } from "./fields.ts";
 import { Response } from "./response.ts";
-
-type ParseResult<T> = [number[], "None" | "Incomplete" | "Bad" | T];
+import { ParseResult } from "./parse_types.ts"
 
 export class ResponseDecoder {
   bytes: number[];
@@ -53,7 +52,7 @@ export class ResponseDecoder {
       const command_index = sop_index + 1;
       if (bytes.length > command_index) {
         const command_byte = bytes[command_index];
-        const command = this.parse_command(command_byte);
+        const command = parse_command(command_byte);
 
         if (command) {
           const response_length = this.response_length(command);
@@ -80,17 +79,6 @@ export class ResponseDecoder {
   }
 
   flush(_controller: TransformStreamDefaultController) {}
-
-  parse_command(byte: number): Command | null {
-    switch (byte) {
-      case CommandValue.Read:
-        return "Read";
-      case CommandValue.Write:
-        return "Write";
-      default:
-        return null;
-    }
-  }
 
   response_length(command: Command): number {
     const sync_len = 1;

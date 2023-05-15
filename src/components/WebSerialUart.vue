@@ -2,6 +2,7 @@
 import TextInputLabel from './TextInputLabel.vue';
 import TextAreaLabel from './TextAreaLabel.vue';
 import { Request } from '../request.ts';
+import { Response } from '../response.ts';
 import { RequestEncoder } from '../request_encoder.ts';
 import { ResponseDecoder } from '../response_decoder.ts';
 import { ref } from 'vue';
@@ -9,7 +10,7 @@ import { ref } from 'vue';
 const log = ref("");
 const addr = ref("0x00000000");
 const data = ref("0x55555555");
-const port = ref(null);
+const port = ref<SerialPort | null>(null);
 const isConnected = ref(false);
 
 async function connect() {
@@ -59,9 +60,9 @@ async function send_request(request: Request) {
     request.bytes = encoder.encode(request);
     logMessage(requestToString(request));
 
-    if (port.value && port.value.writeable) {
-      const writer = port.value.writeable.getWriter();
-      await writer.write(bytes);
+    if (port.value && port.value.writable) {
+      const writer = port.value.writable.getWriter();
+      await writer.write(request.bytes);
       writer.releaseLock();
     }
 
@@ -70,7 +71,7 @@ async function send_request(request: Request) {
         .pipeThrough(new TransformStream(new ResponseDecoder()))
         .getReader();
 
-      const {value, done} = await reader.read();
+      const {value} = await reader.read();
       const response = value;
       if (response.command == "Read") {
         data.value = response.data;
@@ -80,10 +81,8 @@ async function send_request(request: Request) {
     }
 }
 
-function requestToString(request: Request) {
-  const bytes = Array.from(request.bytes)
-    .map(x => x.toString(16).padStart(2, "0"))
-    .join(" ");
+function requestToString(request: Request): string {
+  const bytes = packetBytesToString(request);
   const addr = request.addr.toString(16).padStart(8, "0");
   switch (request.command) {
     case "Read": {
@@ -98,18 +97,27 @@ function requestToString(request: Request) {
   }
 }
 
-function responseToString(response: Response) {
-  const bytes = Array.from(request.bytes)
-    .map(x => x.toString(16).padStart(2, "0"))
-    .join(" ");
-  switch (request.command) {
+function packetBytesToString(packet: Request | Response): string {
+  if (packet.bytes !== undefined) {
+    const array: Array<number> = Array.from(packet.bytes);
+    return array
+      .map(x => x.toString(16).padStart(2, "0"))
+      .join(" ");
+  } else {
+    return "";
+  }
+}
+
+function responseToString(response: Response): string {
+  const bytes = packetBytesToString(response);
+  switch (response.command) {
     case "Read": {
-      const data = request.data.toString(16).padStart(8, "0");
-      const obj = { command: request.command, data: data, bytes: bytes };
+      const data = response.data.toString(16).padStart(8, "0");
+      const obj = { command: response.command, data: data, bytes: bytes };
       return JSON.stringify(obj).replaceAll(",", ", ");
     }
     case "Write": {
-      const obj = { command: request.command, bytes: bytes };
+      const obj = { command: response.command, bytes: bytes };
       return JSON.stringify(obj).replaceAll(",", ", ");
     }
   }

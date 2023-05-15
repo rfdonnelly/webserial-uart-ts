@@ -3,7 +3,11 @@
     label: string,
     modelValue: string,
   }>();
-  defineEmits(['update:modelValue']);
+  const emit = defineEmits(['update:modelValue']);
+
+  function updateValue(e: Event) {
+    emit("update:modelValue", (e.target as HTMLInputElement).value);
+  }
 </script>
 
 <template>
@@ -17,7 +21,7 @@
       "
       placeholder=""
       :value="props.modelValue"
-      @input="$emit('update:modelValue', $event.target.value)"
+      @input="updateValue"
     />
     <label
       class="
