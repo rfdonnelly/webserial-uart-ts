@@ -1,11 +1,9 @@
 import {
   command_value,
   response_length,
-  Command,
-  CommandValue,
   SYNC_MARKER,
 } from "./fields.ts";
-import { Response } from "./response.ts";
+import { Response } from "./packets.ts";
 
 export class ResponseEncoder {
   encode(response: Response): Uint8Array {

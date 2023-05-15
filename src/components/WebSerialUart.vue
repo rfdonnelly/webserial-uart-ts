@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import TextInputLabel from './TextInputLabel.vue';
 import TextAreaLabel from './TextAreaLabel.vue';
-import { Request } from '../request.ts';
-import { Response } from '../response.ts';
+import { requestToString, responseToString, Request } from '../packets.ts';
 import { RequestEncoder } from '../request_encoder.ts';
 import { ResponseDecoder } from '../response_decoder.ts';
 import { ref } from 'vue';
@@ -26,6 +25,10 @@ async function connect() {
   await port.open({
     baudRate: 115200,
   });
+
+  if (!port.readable || !port.writable) {
+    return;
+  }
 
   const reader = port.readable
     .pipeThrough(new TransformStream(new ResponseDecoder()))
@@ -91,48 +94,6 @@ async function send_request(request: Request) {
       }
       logMessage(responseToString(response));
     }
-}
-
-function requestToString(request: Request): string {
-  const bytes = packetBytesToString(request);
-  const addr = request.addr.toString(16).padStart(8, "0");
-  switch (request.command) {
-    case "Read": {
-      const obj = { command: request.command, addr: addr, bytes: bytes };
-      return JSON.stringify(obj).replaceAll(",", ", ");
-    }
-    case "Write": {
-      const data = request.data.toString(16).padStart(8, "0");
-      const obj = { command: request.command, addr: addr, data: data, bytes: bytes };
-      return JSON.stringify(obj).replaceAll(",", ", ");
-    }
-  }
-}
-
-function packetBytesToString(packet: Request | Response): string {
-  if (packet.bytes !== undefined) {
-    const array: Array<number> = Array.from(packet.bytes);
-    return array
-      .map(x => x.toString(16).padStart(2, "0"))
-      .join(" ");
-  } else {
-    return "";
-  }
-}
-
-function responseToString(response: Response): string {
-  const bytes = packetBytesToString(response);
-  switch (response.command) {
-    case "Read": {
-      const data = response.data.toString(16).padStart(8, "0");
-      const obj = { command: response.command, data: data, bytes: bytes };
-      return JSON.stringify(obj).replaceAll(",", ", ");
-    }
-    case "Write": {
-      const obj = { command: response.command, bytes: bytes };
-      return JSON.stringify(obj).replaceAll(",", ", ");
-    }
-  }
 }
 </script>
 

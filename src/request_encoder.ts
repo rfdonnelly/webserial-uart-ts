@@ -1,11 +1,9 @@
 import {
   command_value,
   request_length,
-  Command,
-  CommandValue,
   SYNC_MARKER,
 } from "./fields.ts";
-import { Request } from "./request.ts";
+import { Request } from "./packets.ts";
 
 export class RequestEncoder {
   encode(request: Request): Uint8Array {

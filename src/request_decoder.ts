@@ -4,7 +4,7 @@ import {
   Command,
   SYNC_MARKER,
 } from "./fields.ts";
-import { Request } from "./request.ts";
+import { Request } from "./packets.ts";
 import { ParseResult } from "./parse_types.ts";
 
 export class RequestDecoder {
