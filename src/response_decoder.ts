@@ -60,7 +60,7 @@ export class ResponseDecoder {
           if (bytes.length >= sop_index + response_length) {
             const eop_index = sop_index + response_length;
             const response_bytes = bytes.slice(sop_index, eop_index);
-            const response = this.parse_known_response(command, response_bytes);
+            const response = this.parse_response_bounded(command, response_bytes);
             return [bytes.slice(eop_index), response];
           } else {
             // Not enough bytes for a response
@@ -108,7 +108,7 @@ export class ResponseDecoder {
     }
   }
 
-  parse_known_response(command: Command, bytes: number[]): Response {
+  parse_response_bounded(command: Command, bytes: number[]): Response {
     switch (command) {
       case "Read": {
         const buffer = new Uint8Array(bytes).buffer;
