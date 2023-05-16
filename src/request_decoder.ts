@@ -86,7 +86,7 @@ export class RequestDecoder {
   parse_request_bounded(command: Command, bytes: number[]): Request {
     const buffer = new Uint8Array(bytes).buffer;
     const view = new DataView(buffer);
-    const addr = view.getUint32(2, true);
+    const addr = view.getUint32(2, false);
 
     switch (command) {
       case "Read": {
@@ -98,7 +98,7 @@ export class RequestDecoder {
         };
       }
       case "Write": {
-        const data = view.getUint32(6, true);
+        const data = view.getUint32(6, false);
         return {
           command: command,
           addr: addr,

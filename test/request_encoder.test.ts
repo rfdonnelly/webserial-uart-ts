@@ -15,5 +15,5 @@ it<Ctxt>("write", ({ o }) => {
     Array.from(
       o.encode({ command: "Read", addr: 0x12345678, crc: 0x55 }).values(),
     ),
-  ).toEqual([SYNC_MARKER, CommandValue.Read, 0x78, 0x56, 0x34, 0x12, 0x55]);
+  ).toEqual([SYNC_MARKER, CommandValue.Read, 0x12, 0x34, 0x56, 0x78, 0x55]);
 });

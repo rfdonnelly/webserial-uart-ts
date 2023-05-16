@@ -12,7 +12,7 @@ export class ResponseEncoder {
       const buffer = new Uint32Array([response.data]).buffer;
       const view = new DataView(buffer);
       for (let i = 0; i < 4; i++) {
-        bytes[byte_idx++] = view.getUint8(i);
+        bytes[byte_idx++] = view.getUint8(3 - i);
       }
     }
     bytes[byte_idx++] = response.crc;

@@ -11,13 +11,13 @@ export class RequestEncoder {
     const buffer = new Uint32Array([request.addr]).buffer;
     const view = new DataView(buffer);
     for (let i = 0; i < 4; i++) {
-      bytes[byte_idx++] = view.getUint8(i);
+      bytes[byte_idx++] = view.getUint8(3 - i);
     }
     if (request.command == "Write") {
       const buffer = new Uint32Array([request.data]).buffer;
       const view = new DataView(buffer);
       for (let i = 0; i < 4; i++) {
-        bytes[byte_idx++] = view.getUint8(i);
+        bytes[byte_idx++] = view.getUint8(3 - i);
       }
     }
     bytes[byte_idx++] = request.crc;

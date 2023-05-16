@@ -93,7 +93,7 @@ export class ResponseDecoder {
       case "Read": {
         const buffer = new Uint8Array(bytes).buffer;
         const view = new DataView(buffer);
-        const data = view.getUint32(2, true);
+        const data = view.getUint32(2, false);
         return {
           command: command,
           data: data,
