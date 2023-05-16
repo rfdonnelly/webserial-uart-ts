@@ -17,7 +17,7 @@ it<Ctxt>("write", (ctxt) => {
     command: "Write",
     addr: 0x87654321,
     data: 0x12345678,
-    crc: 0x55,
+    crc: 0x6b,
   };
   requestExpected.bytes = ctxt.encoder.encode(requestExpected);
   const [remainingBytes, requestActual] = ctxt.decoder.parse_request(
@@ -30,7 +30,7 @@ it<Ctxt>("write", (ctxt) => {
   const requestExpected = {
     command: "Read",
     addr: 0x12345678,
-    crc: 0x55,
+    crc: 0xa9,
   };
   requestExpected.bytes = ctxt.encoder.encode(requestExpected);
   const [remainingBytes, requestActual] = ctxt.decoder.parse_request(

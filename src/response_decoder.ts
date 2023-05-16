@@ -86,8 +86,6 @@ export class ResponseDecoder {
     }
   }
 
-  flush(_controller: TransformStreamDefaultController) {}
-
   parse_response_bounded(command: Command, bytes: number[]): Response {
     switch (command) {
       case "Read": {

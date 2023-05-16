@@ -1,5 +1,6 @@
 import { command_value, request_length, SYNC_MARKER } from "./fields.ts";
 import { Request } from "./packets.ts";
+import { crc } from "./crc.ts";
 
 export class RequestEncoder {
   encode(request: Request): Uint8Array {
@@ -20,7 +21,7 @@ export class RequestEncoder {
         bytes[byte_idx++] = view.getUint8(3 - i);
       }
     }
-    bytes[byte_idx++] = request.crc;
+    bytes[byte_idx++] = crc(bytes);
 
     return bytes;
   }

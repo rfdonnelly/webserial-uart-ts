@@ -1,5 +1,6 @@
 import { command_value, response_length, SYNC_MARKER } from "./fields.ts";
 import { Response } from "./packets.ts";
+import { crc } from "./crc.ts";
 
 export class ResponseEncoder {
   encode(response: Response): Uint8Array {
@@ -15,7 +16,7 @@ export class ResponseEncoder {
         bytes[byte_idx++] = view.getUint8(3 - i);
       }
     }
-    bytes[byte_idx++] = response.crc;
+    bytes[byte_idx++] = crc(bytes);
 
     return bytes;
   }
