@@ -20,6 +20,14 @@ const data = ref("0x55555555");
 const connection = ref<NullableConnection>(null);
 const isConnected = ref(false);
 
+async function timeout(ms: number) {
+  return new Promise((_, reject) => {
+    setTimeout(() => {
+      reject();
+    }, ms);
+  });
+}
+
 async function connect() {
   const port = await navigator.serial.requestPort();
   await port.open({
@@ -77,6 +85,19 @@ function timestamp() {
   return new Date(Date.now()).toISOString();
 }
 
+async function get_response() {
+  if (connection.value) {
+    const result = await connection.value.reader.read();
+    if (!result.done) {
+      const response = result.value;
+      if (response.command == "Read") {
+        data.value = response.data;
+      }
+      logMessage(responseToString(response));
+    }
+  }
+}
+
 async function send_request(request: Request) {
     const encoder = new RequestEncoder();
     request.bytes = encoder.encode(request);
@@ -84,15 +105,25 @@ async function send_request(request: Request) {
 
     if (connection.value) {
       await connection.value.writer.write(request.bytes);
+      connection.value.writer.releaseLock();
     }
 
     if (connection.value) {
-      const {value} = await connection.value.reader.read();
-      const response = value;
-      if (response.command == "Read") {
-        data.value = response.data;
+      let timeoutOccurred = false;
+      const getResponsePromise = get_response();
+      await Promise.race([
+        timeout(1000)
+        .catch(() => {
+          timeoutOccurred = true;
+          logMessage("Timeout waiting for response");
+        }),
+        getResponsePromise,
+      ]);
+      if (timeoutOccurred) {
+        connection.value.reader.cancel();
+        await getResponsePromise;
       }
-      logMessage(responseToString(response));
+      connection.value.reader.releaseLock();
     }
 }
 </script>
