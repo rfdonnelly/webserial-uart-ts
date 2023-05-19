@@ -33,13 +33,13 @@ export class RequestDecoder {
   }
 
   parse_requests(bytes: number[]): ParseResult<Request[]> {
-    let requests = [];
+    const requests = [];
     let next = false;
 
     do {
       next = false;
       const [next_bytes, result] = this.parse_request(bytes);
-      if (typeof result == "object") {
+      if (typeof result === "object") {
         const request = result;
         requests.push(request);
         next = true;
@@ -51,7 +51,7 @@ export class RequestDecoder {
   }
 
   parse_request(bytes: number[]): ParseResult<Request> {
-    let sop_index = bytes.indexOf(SYNC_MARKER);
+    const sop_index = bytes.indexOf(SYNC_MARKER);
 
     if (sop_index >= 0) {
       const command_index = sop_index + 1;

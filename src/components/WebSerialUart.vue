@@ -90,7 +90,7 @@ async function get_response() {
     const result = await connection.value.reader.read();
     if (!result.done) {
       const response = result.value;
-      if (response.command == "Read") {
+      if (response.command === "Read") {
         data.value = response.data;
       }
       logMessage(responseToString(response));

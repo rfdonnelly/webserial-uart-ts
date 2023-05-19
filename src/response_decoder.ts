@@ -33,13 +33,13 @@ export class ResponseDecoder {
   }
 
   parse_responses(bytes: number[]): ParseResult<Response[]> {
-    let responses = [];
+    const responses = [];
     let next = false;
 
     do {
       next = false;
       const [next_bytes, result] = this.parse_response(bytes);
-      if (typeof result == "object") {
+      if (typeof result === "object") {
         const response = result;
         responses.push(response);
         next = true;
@@ -51,7 +51,7 @@ export class ResponseDecoder {
   }
 
   parse_response(bytes: number[]): ParseResult<Response> {
-    let sop_index = bytes.indexOf(SYNC_MARKER);
+    const sop_index = bytes.indexOf(SYNC_MARKER);
 
     if (sop_index >= 0) {
       const command_index = sop_index + 1;
