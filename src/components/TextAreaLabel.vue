@@ -27,13 +27,13 @@
         before:content[' '] after:content[' '] pointer-events-none
         absolute left-0 -top-1.5 flex h-full w-full select-none text-[11px] font-normal
         leading-tight text-blue-gray-400 transition-all
-        before:mt-[6.5px] before:mr-1 before:w-2.5 before:rounded-tl-md before:border-t before:border-l
+        before:mt-[6.5px] before:mr-1 before:w-2.5 before:rounded-tl-md before:border-t
         before:border-blue-gray-200 before:transition-all
         after:mt-[6.5px] after:ml-1 after:box-border after:block after:h-1.5
         after:w-2.5 after:flex-grow after:rounded-tr-md after:border-t after:border-r after:border-blue-gray-200
         after:transition-all
         peer-focus:leading-tight peer-focus:text-blue-500
-        peer-focus:before:border-t-2 peer-focus:before:border-l-2 peer-focus:before:border-blue-500
+        peer-focus:before:border-t-2 peer-focus:before:border-blue-500
         peer-focus:after:border-t-2 peer-focus:after:border-r-2 peer-focus:after:border-blue-500
       "
     >{{props.label}}</label>
