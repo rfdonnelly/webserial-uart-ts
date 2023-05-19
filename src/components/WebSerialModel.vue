@@ -45,8 +45,9 @@ async function connect() {
   const mem = new Map<number, number>();
 
   while (port.readable) {
-    const {value} = await reader.read();
-    const request = value;
+    const result = await reader.read();
+    if (result.done) { return; }
+    const request = result.value;
     logMessage(requestToString(request));
 
     switch (request.command) {
@@ -91,6 +92,9 @@ function updateMemString(mem: Map<number, number>) {
 
 async function disconnect() {
   if (connection.value) {
+    connection.value.reader.cancel();
+    connection.value.reader.releaseLock();
+    connection.value.writer.releaseLock();
     await connection.value.port.close();
     logMessage("Disconnected");
   }
