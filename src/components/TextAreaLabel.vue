@@ -6,7 +6,8 @@
   const emit = defineEmits(['update:modelValue']);
 
   function updateValue(e: Event) {
-    emit("update:modelValue", (e.target as HTMLInputElement).value);
+    const target = e.target as HTMLInputElement;
+    emit("update:modelValue", target.value);
   }
 </script>
 
@@ -20,8 +21,9 @@
         focus:border-2 focus:border-blue-500 focus:border-t-transparent focus:outline-0
         disabled:border-0 disabled:bg-blue-gray-50
       "
+      :value="props.modelValue"
       @input="updateValue"
-    >{{ props.modelValue }}</textarea>
+    ></textarea>
     <label
       class="
         before:content[' '] after:content[' '] pointer-events-none
