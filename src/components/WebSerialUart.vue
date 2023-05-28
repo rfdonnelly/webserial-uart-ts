@@ -20,14 +20,6 @@ const data = ref("0x55555555");
 const connection = ref<NullableConnection>(null);
 const isConnected = ref(false);
 
-async function timeout(ms: number) {
-  return new Promise((_, reject) => {
-    setTimeout(() => {
-      reject();
-    }, ms);
-  });
-}
-
 async function connect() {
   const port = await navigator.serial.requestPort();
   await port.open({
@@ -110,20 +102,18 @@ async function send_request(request: Request) {
     }
 
     if (connection.value) {
-      let timeoutOccurred = false;
-      const getResponsePromise = get_response();
       await Promise.race([
-        timeout(1000)
-        .catch(() => {
-          timeoutOccurred = true;
-          logMessage("Timeout waiting for response");
-        }),
-        getResponsePromise,
-      ]);
-      if (timeoutOccurred) {
-        connection.value.reader.cancel();
-        await getResponsePromise;
-      }
+        get_response(),
+        new Promise((_resolve, reject) => {
+            setTimeout(() => reject(new Error("Timeout waiting for response")), 1000);
+        })
+      ])
+      .catch((error) => {
+          logMessage(error);
+          if (connection.value) {
+            connection.value.reader.cancel();
+          }
+      })
     }
 }
 </script>
