@@ -88,7 +88,7 @@ async function get_response() {
       if (response.command === "Read") {
         data.value = response.data;
       }
-      logMessage(responseToString(response));
+      logMessage("Response " + responseToString(response));
     }
   }
 }
@@ -96,7 +96,7 @@ async function get_response() {
 async function send_request(request: Request) {
     const encoder = new RequestEncoder();
     request.bytes = encoder.encode(request);
-    logMessage(requestToString(request));
+    logMessage("Request " + requestToString(request));
 
     if (connection.value) {
       await connection.value.writer.write(request.bytes);
