@@ -1,20 +1,30 @@
 <script setup lang="ts">
+  import { onUpdated, ref } from 'vue';
+
   const props = defineProps<{
     label: string,
     modelValue: string,
   }>();
   const emit = defineEmits(['update:modelValue']);
+  const textarea = ref<HTMLInputElement | null>(null);
 
   function updateValue(e: Event) {
     const target = e.target as HTMLInputElement;
     emit("update:modelValue", target.value);
   }
+
+  onUpdated(() => {
+    if (textarea.value) {
+      textarea.value.scrollTop = textarea.value.scrollHeight + 20;
+    }
+  });
 </script>
 
 <template>
     <div class="relative h-full w-full min-w-[200px]">
     <textarea
-      rows="12"
+      ref="textarea"
+      rows="6"
       class="
         peer w-full rounded-md border border-t-transparent bg-transparent px-3 py-2.5
         font-mono text-sm font-normal text-blue-gray-700 outline outline-0 transition-all

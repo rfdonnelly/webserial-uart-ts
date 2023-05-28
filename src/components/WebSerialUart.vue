@@ -56,7 +56,10 @@ async function disconnect() {
 }
 
 function logMessage(message: string) {
-  log.value += timestamp() + " " + message + "\n";
+  if (log.value != "") {
+      log.value += "\n";
+  }
+  log.value += timestamp() + " " + message;
 }
 
 async function send_write() {
