@@ -54,6 +54,8 @@ async function connect() {
 
 async function disconnect() {
   if (connection.value) {
+    connection.value.writer.releaseLock();
+    connection.value.reader.releaseLock();
     await connection.value.port.close();
     logMessage("Disconnected");
   }
@@ -105,7 +107,6 @@ async function send_request(request: Request) {
 
     if (connection.value) {
       await connection.value.writer.write(request.bytes);
-      connection.value.writer.releaseLock();
     }
 
     if (connection.value) {
@@ -123,7 +124,6 @@ async function send_request(request: Request) {
         connection.value.reader.cancel();
         await getResponsePromise;
       }
-      connection.value.reader.releaseLock();
     }
 }
 </script>
