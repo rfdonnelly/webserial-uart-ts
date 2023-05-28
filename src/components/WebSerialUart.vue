@@ -49,6 +49,11 @@ async function disconnect() {
   if (connection.value) {
     connection.value.writer.releaseLock();
     connection.value.reader.releaseLock();
+    // FIXME: Trying to close the serial port after writing/reading a
+    // request/response results in an exception because the reader is still
+    // locked even if we call releaseLock above.
+    // Fix seems to be to use pipeTo instead of pipeThrough above.  See
+    // https://github.com/WICG/serial/issues/134.
     await connection.value.port.close();
     logMessage("Disconnected");
   }
