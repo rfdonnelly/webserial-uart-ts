@@ -1,5 +1,8 @@
 export type Command = "Read" | "Write";
 
+// TODO: Add support for error responses
+export type ResponseCommand = "Read" | "Write" | "Error";
+
 export enum CommandValue {
   Read = 0x30,
   Write = 0x50,
