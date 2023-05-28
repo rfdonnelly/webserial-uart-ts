@@ -94,7 +94,7 @@ async function get_response() {
     if (!result.done) {
       const response = result.value;
       if (response.command === "Read") {
-        data.value = response.data;
+        data.value = "0x" + response.data.toString(16).padStart(8, 0);
       }
       logMessage("Response " + responseToString(response));
     }
