@@ -24,6 +24,7 @@ async function connect() {
   const port = await navigator.serial.requestPort();
   await port.open({
     baudRate: 115200,
+    parity: "odd",
   });
 
   if (!port.readable || !port.writable) {
