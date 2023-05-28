@@ -15,7 +15,7 @@ beforeEach<Ctxt>(async (ctxt) => {
 it<Ctxt>("write", (ctxt) => {
   const responseExpected = {
     command: "Write",
-    crc: 0xf8,
+    crc: 0x77,
   };
   responseExpected.bytes = ctxt.encoder.encode(responseExpected);
   const [remainingBytes, responseActual] = ctxt.decoder.parse_response(
@@ -28,7 +28,7 @@ it<Ctxt>("read", (ctxt) => {
   const responseExpected = {
     command: "Read",
     data: 0x12345678,
-    crc: 0xa9,
+    crc: 0xba,
   };
   responseExpected.bytes = ctxt.encoder.encode(responseExpected);
   const [remainingBytes, responseActual] = ctxt.decoder.parse_response(

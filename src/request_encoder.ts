@@ -21,7 +21,7 @@ export class RequestEncoder {
         bytes[byte_idx++] = view.getUint8(3 - i);
       }
     }
-    bytes[byte_idx++] = crc(bytes);
+    bytes[byte_idx++] = crc(bytes.slice(0, length - 1));
 
     return bytes;
   }
