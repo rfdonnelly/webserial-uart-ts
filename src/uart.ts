@@ -1,6 +1,11 @@
-import { requestToString, responseToString, Request, Response } from './packets.ts';
-import { RequestEncoder } from './request_encoder.ts';
-import { ResponseDecoder } from './response_decoder.ts';
+import {
+  requestToString,
+  responseToString,
+  Request,
+  Response,
+} from "./packets.ts";
+import { RequestEncoder } from "./request_encoder.ts";
+import { ResponseDecoder } from "./response_decoder.ts";
 
 interface Connection {
   port: SerialPort;
@@ -51,18 +56,18 @@ export class Uart {
   }
 
   async disconnect() {
-      if (this.connection) {
-        this.connection.writer.releaseLock();
-        await this.connection.reader.cancel().catch(() => {
-          // Ignore error
-        });
-        await this.connection.readerClosed.catch(() => {
-          // Ignore error
-        });
-        await this.connection.port.close();
-        this.connection = null;
-        this.log("Disconnected");
-      }
+    if (this.connection) {
+      this.connection.writer.releaseLock();
+      await this.connection.reader.cancel().catch(() => {
+        // Ignore error
+      });
+      await this.connection.readerClosed.catch(() => {
+        // Ignore error
+      });
+      await this.connection.port.close();
+      this.connection = null;
+      this.log("Disconnected");
+    }
   }
 
   async write(request: Request) {
