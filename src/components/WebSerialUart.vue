@@ -17,8 +17,12 @@ async function connect() {
 }
 
 async function disconnect() {
-  await uart.value.disconnect();
-  isConnected.value = false;
+  try {
+    await uart.value.disconnect();
+  } finally {
+    isConnected.value = false;
+    uart.value = new Uart(logMessage);
+  }
 }
 
 function logMessage(message: string) {
@@ -50,11 +54,15 @@ function timestamp() {
 }
 
 async function send_request(request: Request) {
-    await uart.value.write(request);
+  await uart.value.write(request);
+  try {
     const response = await uart.value.read();
     if (response.command === "Read") {
-        data.value = "0x" + response.data.toString(16).padStart(8, "0");
+      data.value = "0x" + response.data.toString(16).padStart(8, "0");
     }
+  } catch {
+    // Ignore
+  }
 }
 </script>
 

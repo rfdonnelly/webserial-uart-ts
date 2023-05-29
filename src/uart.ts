@@ -5,7 +5,9 @@ import { ResponseDecoder } from './response_decoder.ts';
 interface Connection {
   port: SerialPort;
   reader: any;
+  readerClosed: Promise<any>;
   writer: any;
+  decoder: TransformStream<Uint8Array, Response>;
 }
 
 type Logger = (message: string) => void;
@@ -32,32 +34,35 @@ export class Uart {
       return;
     }
 
-    const reader = port.readable
-      .pipeThrough(new TransformStream(new ResponseDecoder()))
-      .getReader();
+    const decoder = new TransformStream(new ResponseDecoder());
+    const readerClosed = port.readable.pipeTo(decoder.writable);
+    const reader = decoder.readable.getReader();
     const writer = port.writable.getWriter();
 
     this.connection = {
       port: port,
       reader: reader,
+      readerClosed: readerClosed,
       writer: writer,
+      decoder: decoder,
     };
 
     this.log("Connected");
   }
 
   async disconnect() {
-    if (this.connection) {
-      this.connection.writer.releaseLock();
-      this.connection.reader.releaseLock();
-      // FIXME: Trying to close the serial port after writing/reading a
-      // request/response results in an exception because the reader is still
-      // locked even if we call releaseLock above.
-      // Fix seems to be to use pipeTo instead of pipeThrough above.  See
-      // https://github.com/WICG/serial/issues/134.
-      await this.connection.port.close();
-      this.log("Disconnected");
-    }
+      if (this.connection) {
+        this.connection.writer.releaseLock();
+        await this.connection.reader.cancel().catch(() => {
+          // Ignore error
+        });
+        await this.connection.readerClosed.catch(() => {
+          // Ignore error
+        });
+        await this.connection.port.close();
+        this.connection = null;
+        this.log("Disconnected");
+      }
   }
 
   async write(request: Request) {
@@ -71,49 +76,42 @@ export class Uart {
 
   async read(): Promise<Response> {
     try {
-      return this.promiseWithTimeout(
-        this.read_without_timeout(),
-        1000,
-        new Error("Timeout waiting for response")
-      );
-    } catch (error) {
+      const response = await Promise.race<Response>([
+        this.readWithoutTimeout(),
+        this.responseTimeout(1000),
+      ]);
+      return response;
+    } catch (e) {
       if (this.connection) {
-        this.connection.reader.cancel();
+        await this.connection.reader.cancel().catch(() => {
+          // Ignore error
+        });
       }
-      throw error;
+      this.log((e as Error).message);
+      throw e;
     }
   }
 
-  async promiseWithTimeout<T>(
-    promise: Promise<T>,
-    ms: number,
-    timeoutError: Error,
-  ): Promise<T> {
-    const timeout = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(timeoutError), ms)
+  async responseTimeout(ms: number): Promise<never> {
+    return new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error("Timeout waiting for response")), ms);
     });
-
-    const result = Promise.race<T>([promise, timeout]);
-    if (typeof result !== "object") {
-      throw timeoutError;
-    } else {
-      return result;
-    }
   }
 
-  async read_without_timeout(): Promise<Response> {
+  async readWithoutTimeout(): Promise<Response> {
     if (!this.connection) {
-      throw new Error("Attempt to read without a connection");
+      throw new Error("Attempt to read a response without a connection");
     }
 
     const { value, done } = await this.connection.reader.read();
     if (done) {
-      throw new Error("stream closed");
-    } else {
-      const response = value;
-      this.log("Response " + responseToString(response));
-      return response;
+      this.connection.reader.releaseLock();
+      throw new Error("No response");
     }
+
+    const response = value;
+    this.log("Response " + responseToString(response));
+    return response;
   }
 
   log(message: string) {
