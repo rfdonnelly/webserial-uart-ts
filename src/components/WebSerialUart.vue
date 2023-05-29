@@ -1,62 +1,23 @@
 <script setup lang="ts">
 import TextInputLabel from './TextInputLabel.vue';
 import TextAreaLabel from './TextAreaLabel.vue';
-import { requestToString, responseToString, Request } from '../packets.ts';
-import { RequestEncoder } from '../request_encoder.ts';
-import { ResponseDecoder } from '../response_decoder.ts';
+import { Request } from '../packets.ts';
+import { Uart } from '../uart.ts';
 import { ref } from 'vue';
-
-interface Connection {
-  port: SerialPort;
-  reader: any;
-  writer: any;
-}
-
-type NullableConnection = Connection | null;
 
 const log = ref("");
 const addr = ref("0x00000000");
 const data = ref("0x55555555");
-const connection = ref<NullableConnection>(null);
+const uart = ref<Uart>(new Uart(logMessage));
 const isConnected = ref(false);
 
 async function connect() {
-  const port = await navigator.serial.requestPort();
-  await port.open({
-    baudRate: 115200,
-    parity: "odd",
-  });
-
-  if (!port.readable || !port.writable) {
-    return;
-  }
-
-  const reader = port.readable
-    .pipeThrough(new TransformStream(new ResponseDecoder()))
-    .getReader();
-  const writer = port.writable.getWriter();
-
-  connection.value = {
-    port: port,
-    reader: reader,
-    writer: writer,
-  };
-  logMessage("Connected");
+  await uart.value.connect();
   isConnected.value = true;
 }
 
 async function disconnect() {
-  if (connection.value) {
-    connection.value.writer.releaseLock();
-    connection.value.reader.releaseLock();
-    // FIXME: Trying to close the serial port after writing/reading a
-    // request/response results in an exception because the reader is still
-    // locked even if we call releaseLock above.
-    // Fix seems to be to use pipeTo instead of pipeThrough above.  See
-    // https://github.com/WICG/serial/issues/134.
-    await connection.value.port.close();
-    logMessage("Disconnected");
-  }
+  await uart.value.disconnect();
   isConnected.value = false;
 }
 
@@ -88,41 +49,11 @@ function timestamp() {
   return new Date(Date.now()).toISOString();
 }
 
-async function get_response() {
-  if (connection.value) {
-    const result = await connection.value.reader.read();
-    if (!result.done) {
-      const response = result.value;
-      if (response.command === "Read") {
-        data.value = "0x" + response.data.toString(16).padStart(8, 0);
-      }
-      logMessage("Response " + responseToString(response));
-    }
-  }
-}
-
 async function send_request(request: Request) {
-    const encoder = new RequestEncoder();
-    request.bytes = encoder.encode(request);
-    logMessage("Request " + requestToString(request));
-
-    if (connection.value) {
-      await connection.value.writer.write(request.bytes);
-    }
-
-    if (connection.value) {
-      await Promise.race([
-        get_response(),
-        new Promise((_resolve, reject) => {
-            setTimeout(() => reject(new Error("Timeout waiting for response")), 1000);
-        })
-      ])
-      .catch((error) => {
-          logMessage(error);
-          if (connection.value) {
-            connection.value.reader.cancel();
-          }
-      })
+    await uart.value.write(request);
+    const response = await uart.value.read();
+    if (response.command === "Read") {
+        data.value = "0x" + response.data.toString(16).padStart(8, "0");
     }
 }
 </script>
