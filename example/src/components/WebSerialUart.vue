@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import TextInputLabel from './TextInputLabel.vue';
 import TextAreaLabel from './TextAreaLabel.vue';
-import { Request } from '../packets.ts';
-import { Uart } from '../uart.ts';
+import { type Request, Uart } from 're-uart';
 import { ref } from 'vue';
 
 const log = ref("");

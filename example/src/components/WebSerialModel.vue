@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import TextAreaLabel from './TextAreaLabel.vue';
-import { requestToString, responseToString, Response } from '../packets.ts';
-import { RequestDecoder } from '../request_decoder.ts';
-import { ResponseEncoder } from '../response_encoder.ts';
+import { requestToString, responseToString, type Response } from 're-uart'
+import { RequestDecoder } from 're-uart'
+import { ResponseEncoder } from 're-uart'
 import { ref } from 'vue';
 
 interface Connection {
