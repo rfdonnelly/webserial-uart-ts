@@ -6,7 +6,7 @@ import {
 } from "./packets.ts";
 import { RequestEncoder } from "./request_encoder.ts";
 import { ResponseDecoder } from "./response_decoder.ts";
-import { RegvueHardwareClientInterface } from "regvue-hardware-client-interface";
+import { RegvueHardwareClientInterface, ReadResponseCallback, LogCallback } from "regvue-hardware-client-interface";
 
 interface Connection {
   port: SerialPort;
@@ -16,19 +16,19 @@ interface Connection {
   decoder: TransformStream<Uint8Array, Response>;
 }
 
-type Logger = (message: string) => void;
-
 export class UartClient implements RegvueHardwareClientInterface {
   name = "Register Explorer UART";
   description = "Client for the Register Explorer UART protocol";
 
   connection: Connection | null;
   encoder: RequestEncoder;
-  logger?: Logger;
+  logger?: LogCallback;
+  receivedReadResponse: ReadResponseCallback;
 
-  constructor(logger?: Logger) {
+  constructor(receivedReadResponse: ReadResponseCallback, logger?: LogCallback) {
     this.connection = null;
     this.logger = logger;
+    this.receivedReadResponse = receivedReadResponse;
     this.encoder = new RequestEncoder();
   }
 
@@ -89,7 +89,7 @@ export class UartClient implements RegvueHardwareClientInterface {
     }
   }
 
-  async read(addr: number): Promise<number> {
+  async read(addr: number) {
     await this.writeRequest({
       command: "Read",
       addr: addr,
@@ -98,7 +98,7 @@ export class UartClient implements RegvueHardwareClientInterface {
     try {
       const response = await this.readResponse();
       if (response.command === "Read") {
-        return response.data;
+        this.receivedReadResponse(response.data);
       } else {
         throw "invalid";
       }

@@ -1,1 +1,1 @@
-export { type RegvueHardwareClientInterface } from './regvue_hardware_client_interface';
+export { type RegvueHardwareClientInterface, type ReadResponseCallback, type LogCallback } from './regvue_hardware_client_interface';

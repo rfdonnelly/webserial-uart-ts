@@ -15,7 +15,7 @@ async function connect() {
   const path = "./re-uart.js";
   const href = new URL(path, window.location.href).href
   const {UartClient} = await import(/*@vite-ignore*/ href);
-  client = new UartClient(logMessage);
+  client = new UartClient(receivedReadResponse, logMessage);
   await client?.connect();
   isConnected.value = true;
 }
@@ -43,8 +43,11 @@ async function write() {
 
 async function read() {
   const laddr = parseInt(addr.value);
-  const ldata = await client?.read(laddr);
-  data.value = "0x" + ldata?.toString(16).padStart(8, "0");
+  await client?.read(laddr);
+}
+
+function receivedReadResponse(value: number) {
+  data.value = "0x" + value.toString(16).padStart(8, "0");
 }
 
 function timestamp() {

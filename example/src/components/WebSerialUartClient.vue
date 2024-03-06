@@ -7,7 +7,7 @@ import { ref } from 'vue';
 const log = ref("");
 const addr = ref("0x00000000");
 const data = ref("0x55555555");
-const client = new UartClient(logMessage);
+const client = new UartClient(receivedReadResponse, logMessage);
 const isConnected = ref(false);
 
 async function connect() {
@@ -38,8 +38,11 @@ async function write() {
 
 async function read() {
   const laddr = parseInt(addr.value);
-  const ldata = await client.read(laddr);
-  data.value = "0x" + ldata.toString(16).padStart(8, "0");
+  await client.read(laddr);
+}
+
+function receivedReadResponse(value: number) {
+  data.value = "0x" + value.toString(16).padStart(8, "0");
 }
 
 function timestamp() {
