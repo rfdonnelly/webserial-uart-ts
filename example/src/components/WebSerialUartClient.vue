@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TextInputLabel from './TextInputLabel.vue';
 import TextAreaLabel from './TextAreaLabel.vue';
-import { type Request, UartClient } from 're-uart';
+import { UartClient } from 're-uart';
 import { ref } from 'vue';
 
 const log = ref("");
@@ -32,36 +32,19 @@ function logMessage(message: string) {
 }
 
 async function send_write() {
-  await send_request({
-    command: "Write",
-    addr: parseInt(addr.value),
-    data: parseInt(data.value),
-    crc: 0,
-  });
+  const laddr = parseInt(addr.value);
+  const ldata = parseInt(data.value);
+  await client.value.performWrite(laddr, ldata);
 }
 
 async function send_read() {
-  await send_request({
-    command: "Read",
-    addr: parseInt(addr.value),
-    crc: 0,
-  });
+  const laddr = parseInt(addr.value);
+  const ldata = await client.value.performRead(laddr);
+  data.value = "0x" + ldata.toString(16).padStart(8, "0");
 }
 
 function timestamp() {
   return new Date(Date.now()).toISOString();
-}
-
-async function send_request(request: Request) {
-  await client.value.write(request);
-  try {
-    const response = await client.value.read();
-    if (response.command === "Read") {
-      data.value = "0x" + response.data.toString(16).padStart(8, "0");
-    }
-  } catch {
-    // Ignore
-  }
 }
 </script>
 

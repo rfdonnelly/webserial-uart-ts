@@ -70,6 +70,39 @@ export class UartClient {
     }
   }
 
+  async performWrite(addr: number, data: number) {
+    await this.write({
+      command: "Write",
+      addr: addr,
+      data: data,
+      crc: 0,
+    });
+
+    try {
+      await this.read();
+    } catch {
+      // Ignore
+    }
+  }
+
+  async performRead(addr: number): Promise<number> {
+    await this.write({
+      command: "Read",
+      addr: addr,
+      crc: 0,
+    });
+    try {
+      const response = await this.read();
+      if (response.command === "Read") {
+        return response.data;
+      } else {
+        throw "invalid";
+      }
+    } catch(e) {
+      throw e;
+    }
+  }
+
   async write(request: Request) {
     request.bytes = this.encoder.encode(request);
     this.log("Request " + requestToString(request));
