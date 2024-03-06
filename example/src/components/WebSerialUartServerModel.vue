@@ -5,22 +5,21 @@ import { ref } from 'vue';
 
 const log = ref("");
 const memString = ref("");
-const serverModel = ref<UartServerModel>(new UartServerModel(logMessage, updateMemCallback));
+const serverModel = new UartServerModel(logMessage, updateMemCallback);
 const isConnected = ref(false);
 
 async function connect() {
-  await serverModel.value.connect();
+  await serverModel.connect();
   isConnected.value = true;
 
-  await serverModel.value.listen();
+  await serverModel.listen();
 }
 
 async function disconnect() {
   try {
-    await serverModel.value.disconnect();
+    await serverModel.disconnect();
   } finally {
     isConnected.value = false;
-    serverModel.value = new UartServerModel(logMessage, updateMemCallback);
   }
 }
 

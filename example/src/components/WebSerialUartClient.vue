@@ -7,17 +7,17 @@ import { ref } from 'vue';
 const log = ref("");
 const addr = ref("0x00000000");
 const data = ref("0x55555555");
-const client = ref<UartClient>(new UartClient(logMessage));
+const client = new UartClient(logMessage);
 const isConnected = ref(false);
 
 async function connect() {
-  await client.value.connect();
+  await client.connect();
   isConnected.value = true;
 }
 
 async function disconnect() {
   try {
-    await client.value.disconnect();
+    await client.disconnect();
   } finally {
     isConnected.value = false;
   }
@@ -33,12 +33,12 @@ function logMessage(message: string) {
 async function performWrite() {
   const laddr = parseInt(addr.value);
   const ldata = parseInt(data.value);
-  await client.value.performWrite(laddr, ldata);
+  await client.performWrite(laddr, ldata);
 }
 
 async function performRead() {
   const laddr = parseInt(addr.value);
-  const ldata = await client.value.performRead(laddr);
+  const ldata = await client.performRead(laddr);
   data.value = "0x" + ldata.toString(16).padStart(8, "0");
 }
 
