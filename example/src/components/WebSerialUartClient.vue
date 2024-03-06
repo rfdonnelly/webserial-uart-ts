@@ -20,7 +20,6 @@ async function disconnect() {
     await client.value.disconnect();
   } finally {
     isConnected.value = false;
-    client.value = new UartClient(logMessage);
   }
 }
 
