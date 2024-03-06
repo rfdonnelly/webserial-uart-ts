@@ -30,13 +30,13 @@ function logMessage(message: string) {
   log.value += timestamp() + " " + message;
 }
 
-async function send_write() {
+async function performWrite() {
   const laddr = parseInt(addr.value);
   const ldata = parseInt(data.value);
   await client.value.performWrite(laddr, ldata);
 }
 
-async function send_read() {
+async function performRead() {
   const laddr = parseInt(addr.value);
   const ldata = await client.value.performRead(laddr);
   data.value = "0x" + ldata.toString(16).padStart(8, "0");
@@ -75,14 +75,14 @@ function timestamp() {
             p-2 bg-sky-500 rounded-l-lg rounded-r-none
             focus:outline-sky-700
           "
-          @click="send_write"
+          @click="performWrite"
         >W</button>
         <button type="button"
           class="
             p-2 bg-sky-500 rounded-l-none rounded-r-lg
             focus:outline-sky-700
           "
-          @click="send_read"
+          @click="performRead"
         >R</button>
       </div>
       <TextAreaLabel class="mt-10" label="Log" v-model="log"/>
