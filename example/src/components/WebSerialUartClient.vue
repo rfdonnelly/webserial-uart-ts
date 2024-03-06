@@ -41,7 +41,7 @@ async function read() {
   await client.read(laddr);
 }
 
-function receivedReadResponse(value: number) {
+function receivedReadResponse(_addr: number, value: number) {
   data.value = "0x" + value.toString(16).padStart(8, "0");
 }
 

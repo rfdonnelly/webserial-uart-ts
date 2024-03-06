@@ -98,7 +98,7 @@ export class UartClient implements RegvueHardwareClientInterface {
     try {
       const response = await this.readResponse();
       if (response.command === "Read") {
-        this.receivedReadResponse(response.data);
+        this.receivedReadResponse(addr, response.data);
       } else {
         throw "invalid";
       }

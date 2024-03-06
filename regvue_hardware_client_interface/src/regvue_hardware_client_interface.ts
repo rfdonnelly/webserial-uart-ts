@@ -1,5 +1,5 @@
 export type LogCallback = (message: string) => void;
-export type ReadResponseCallback = (value: number) => void;
+export type ReadResponseCallback = (addr: number, data: number) => void;
 
 export interface RegvueHardwareClientInterface {
   name: string;
