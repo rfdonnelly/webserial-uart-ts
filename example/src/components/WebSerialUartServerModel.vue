@@ -1,104 +1,31 @@
 <script setup lang="ts">
 import TextAreaLabel from './TextAreaLabel.vue';
-import { requestToString, responseToString, type Response } from 're-uart'
-import { RequestDecoder } from 're-uart'
-import { ResponseEncoder } from 're-uart'
+import { UartServerModel } from 're-uart';
 import { ref } from 'vue';
-
-interface Connection {
-  port: SerialPort;
-  reader: any;
-  writer: any;
-}
-
-type NullableConnection = Connection | null;
 
 const log = ref("");
 const memString = ref("");
-const connection = ref<NullableConnection>(null);
+const serverModel = ref<UartServerModel>(new UartServerModel(logMessage, updateMemCallback));
 const isConnected = ref(false);
 
 async function connect() {
-  const port = await navigator.serial.requestPort();
-  await port.open({
-    baudRate: 115200,
-  });
-
-  if (!port.readable || !port.writable) {
-    return;
-  }
-
-  const reader = port.readable
-    .pipeThrough(new TransformStream(new RequestDecoder()))
-    .getReader();
-  const writer = port.writable.getWriter();
-  const encoder = new ResponseEncoder();
-
-  connection.value = {
-    port: port,
-    reader: reader,
-    writer: writer,
-  };
-  logMessage("Connected");
+  await serverModel.value.connect();
   isConnected.value = true;
 
-  const mem = new Map<number, number>();
-
-  while (port.readable) {
-    const result = await reader.read();
-    if (result.done) { return; }
-    const request = result.value;
-    logMessage(requestToString(request));
-
-    switch (request.command) {
-      case "Write":
-        mem.set(request.addr, request.data);
-        updateMemString(mem);
-        await send_response(
-          encoder,
-          writer,
-          {
-            command: "Write",
-            crc: 0,
-          }
-        );
-
-        break;
-      case "Read":
-        if (!mem.has(request.addr)) {
-          const data = Math.floor(Math.random() * 0xffffffff);
-          mem.set(request.addr, data);
-          updateMemString(mem);
-        }
-        await send_response(
-          encoder,
-          writer,
-        {
-          command: "Read",
-          data: mem.get(request.addr) || 0,
-          crc: 0,
-        }
-        );
-        break;
-    }
-  }
-}
-
-function updateMemString(mem: Map<number, number>) {
-  memString.value = Array.from(mem.entries()).map(([a, b]) => {
-      return a.toString(16).padStart(8, "0") + ":" + b.toString(16).padStart(8, "0")
-      }).join("\n");
+  await serverModel.value.listen();
 }
 
 async function disconnect() {
-  if (connection.value) {
-    connection.value.reader.cancel();
-    connection.value.reader.releaseLock();
-    connection.value.writer.releaseLock();
-    await connection.value.port.close();
-    logMessage("Disconnected");
+  try {
+    await serverModel.value.disconnect();
+  } finally {
+    isConnected.value = false;
+    serverModel.value = new UartServerModel(logMessage, updateMemCallback);
   }
-  isConnected.value = false;
+}
+
+function updateMemCallback(value: string) {
+  memString.value = value;
 }
 
 function logMessage(message: string) {
@@ -106,12 +33,6 @@ function logMessage(message: string) {
       log.value += "\n";
   }
   log.value += timestamp() + " " + message;
-}
-
-async function send_response(encoder: ResponseEncoder, writer: WritableStreamDefaultWriter<Uint8Array>, response: Response) {
-  response.bytes = encoder.encode(response);
-  logMessage(responseToString(response));
-  await writer.write(response.bytes);
 }
 
 function timestamp() {
