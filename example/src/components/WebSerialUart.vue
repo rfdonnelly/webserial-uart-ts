@@ -1,26 +1,26 @@
 <script setup lang="ts">
 import TextInputLabel from './TextInputLabel.vue';
 import TextAreaLabel from './TextAreaLabel.vue';
-import { type Request, Uart } from 're-uart';
+import { type Request, UartClient } from 're-uart';
 import { ref } from 'vue';
 
 const log = ref("");
 const addr = ref("0x00000000");
 const data = ref("0x55555555");
-const uart = ref<Uart>(new Uart(logMessage));
+const client = ref<UartClient>(new UartClient(logMessage));
 const isConnected = ref(false);
 
 async function connect() {
-  await uart.value.connect();
+  await client.value.connect();
   isConnected.value = true;
 }
 
 async function disconnect() {
   try {
-    await uart.value.disconnect();
+    await client.value.disconnect();
   } finally {
     isConnected.value = false;
-    uart.value = new Uart(logMessage);
+    client.value = new UartClient(logMessage);
   }
 }
 
@@ -53,9 +53,9 @@ function timestamp() {
 }
 
 async function send_request(request: Request) {
-  await uart.value.write(request);
+  await client.value.write(request);
   try {
-    const response = await uart.value.read();
+    const response = await client.value.read();
     if (response.command === "Read") {
       data.value = "0x" + response.data.toString(16).padStart(8, "0");
     }
