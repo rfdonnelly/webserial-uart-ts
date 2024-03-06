@@ -98,7 +98,7 @@ export class UartClient {
       } else {
         throw "invalid";
       }
-    } catch(e) {
+    } catch (e) {
       throw e;
     }
   }

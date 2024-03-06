@@ -1,4 +1,9 @@
-import { requestToString, responseToString, Request, Response, } from "./packets";
+import {
+  requestToString,
+  responseToString,
+  Request,
+  Response,
+} from "./packets";
 import { RequestDecoder } from "./request_decoder";
 import { ResponseEncoder } from "./response_encoder";
 
@@ -55,11 +60,15 @@ export class UartServerModel {
   async listen() {
     const mem = new Map<number, number>();
 
-    if (!this.connection) { return; }
+    if (!this.connection) {
+      return;
+    }
 
     while (this.connection.port.readable) {
       const result = await this.connection.reader.read();
-      if (result.done) { return; }
+      if (result.done) {
+        return;
+      }
       const request = result.value;
       this.log(requestToString(request));
 
@@ -67,14 +76,10 @@ export class UartServerModel {
         case "Write":
           mem.set(request.addr, request.data);
           this.updateMemString(mem);
-          await this.send_response(
-            this.encoder,
-            this.connection.writer,
-            {
-              command: "Write",
-              crc: 0,
-            }
-          );
+          await this.send_response(this.encoder, this.connection.writer, {
+            command: "Write",
+            crc: 0,
+          });
 
           break;
         case "Read":
@@ -83,15 +88,11 @@ export class UartServerModel {
             mem.set(request.addr, data);
             this.updateMemString(mem);
           }
-          await this.send_response(
-            this.encoder,
-            this.connection.writer,
-          {
+          await this.send_response(this.encoder, this.connection.writer, {
             command: "Read",
             data: mem.get(request.addr) || 0,
             crc: 0,
-          }
-          );
+          });
           break;
       }
     }
@@ -112,7 +113,11 @@ export class UartServerModel {
     }
   }
 
-  async send_response(encoder: ResponseEncoder, writer: WritableStreamDefaultWriter<Uint8Array>, response: Response) {
+  async send_response(
+    encoder: ResponseEncoder,
+    writer: WritableStreamDefaultWriter<Uint8Array>,
+    response: Response,
+  ) {
     response.bytes = encoder.encode(response);
     this.log(responseToString(response));
     await writer.write(response.bytes);
@@ -125,10 +130,18 @@ export class UartServerModel {
   }
 
   updateMemString(mem: Map<number, number>) {
-    if (!this.updateMemCallback) { return; }
-    const value = Array.from(mem.entries()).map(([a, b]) => {
-        return a.toString(16).padStart(8, "0") + ":" + b.toString(16).padStart(8, "0")
-        }).join("\n");
+    if (!this.updateMemCallback) {
+      return;
+    }
+    const value = Array.from(mem.entries())
+      .map(([a, b]) => {
+        return (
+          a.toString(16).padStart(8, "0") +
+          ":" +
+          b.toString(16).padStart(8, "0")
+        );
+      })
+      .join("\n");
     this.updateMemCallback(value);
   }
 }
