@@ -1,0 +1,41 @@
+= Dynamic Import Example
+
+== Key Concept
+
+By default, TypeScript and Vite want to analyze dynamic imports at "compile" time.
+TypeScript and Vite will throw an error if the module does not exist at "compile" time.
+
+We want dynamic imports to be truely dynamic (i.e., be evaluated at runtime).
+The following snippet achieves this:
+
+[source,ts]
+----
+// Pass path via variablet to defeat TypeScript analysis
+const path = "./mymodule.js"
+// Use to @vite-ignore pragma to disable Vite warning
+const { MyType } = await import(/*@vite-ignore*/ path);
+----
+
+== Build
+
+[souce,sh]
+----
+cd $(git rev-parse --show-toplevel)
+npm run build
+cd -
+npm run build
+cp ../dist/index.js dist/re-uart.js
+cd dist
+npx serve
+----
+
+== Dev
+
+[source,sh]
+----
+cd $(git rev-parse --show-toplevel)
+npm run build
+cd -
+cp ../dist/index.js src/re-uart.js
+vite
+----
