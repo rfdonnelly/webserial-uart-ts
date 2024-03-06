@@ -10,36 +10,44 @@ The following snippet achieves this:
 
 [source,ts]
 ----
-// Pass path via variablet to defeat TypeScript analysis
-const path = "./mymodule.js"
+// Pass path via variable to defeat TypeScript analysis
+const relpath = "./mymodule.js"
+// Make it relative to current href so that it works the same for dev and prod
+const path = new URL(path, window.location.href).href
 // Use to @vite-ignore pragma to disable Vite warning
 const { MyType } = await import(/*@vite-ignore*/ path);
 ----
 
 NOTE: Should add Vite path alias to simplify the path handling.
 
-== Build
+== Build Library
+
+[source,sh]
+.Build
+----
+(cd ../lib && npm install && npm run build)
+----
+
+[source,sh]
+.Copy
+----
+mkdir public
+cp ../lib/dist/index.js public/re-uart.js
+----
+
+== Build and Serve Example
 
 [souce,sh]
 ----
-cd ../lib
+npm install
 npm run build
-
-cd -
-npm run build
-cp ../dist/index.js dist/re-uart.js
-cd dist
-npx serve
+npx serve dist
 ----
 
 == Dev
 
 [source,sh]
 ----
-cd ../lib
-npm run build
-
-cd -
-cp ../dist/index.js src/re-uart.js
-vite
+npm install
+npm run dev
 ----

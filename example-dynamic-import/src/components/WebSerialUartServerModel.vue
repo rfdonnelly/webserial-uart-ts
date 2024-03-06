@@ -8,8 +8,9 @@ const serverModel = ref<any>(null);
 const isConnected = ref(false);
 
 async function connect() {
-  const path = "../re-uart.js";
-  const {UartServerModel} = await import(/*@vite-ignore*/ path);
+  const path = "./re-uart.js";
+  const href = new URL(path, window.location.href).href
+  const {UartServerModel} = await import(/*@vite-ignore*/ href);
   serverModel.value = new UartServerModel(logMessage, updateMemCallback);
   await serverModel.value.connect();
   isConnected.value = true;

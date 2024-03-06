@@ -10,8 +10,9 @@ const client = ref<any>(null);
 const isConnected = ref(false);
 
 async function connect() {
-  const path = "../re-uart.js";
-  const {UartClient} = await import(/*@vite-ignore*/ path);
+  const path = "./re-uart.js";
+  const href = new URL(path, window.location.href).href
+  const {UartClient} = await import(/*@vite-ignore*/ href);
   client.value = new UartClient(logMessage);
   await client.value.connect();
   isConnected.value = true;
