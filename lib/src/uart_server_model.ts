@@ -22,12 +22,14 @@ export class UartServerModel {
   encoder: ResponseEncoder;
   logger?: Logger;
   updateMemCallback?: Logger;
+  mem: Map<number, number>;
 
   constructor(logger?: Logger, updateMemCallback?: Logger) {
     this.connection = null;
     this.logger = logger;
     this.updateMemCallback = updateMemCallback;
     this.encoder = new ResponseEncoder();
+    this.mem = new Map();
   }
 
   async connect() {
@@ -58,8 +60,6 @@ export class UartServerModel {
   }
 
   async listen() {
-    const mem = new Map<number, number>();
-
     if (!this.connection) {
       return;
     }
@@ -74,8 +74,8 @@ export class UartServerModel {
 
       switch (request.command) {
         case "Write":
-          mem.set(request.addr, request.data);
-          this.updateMemString(mem);
+          this.mem.set(request.addr, request.data);
+          this.updateMemString(this.mem);
           await this.send_response(this.encoder, this.connection.writer, {
             command: "Write",
             crc: 0,
@@ -83,14 +83,10 @@ export class UartServerModel {
 
           break;
         case "Read":
-          if (!mem.has(request.addr)) {
-            const data = Math.floor(Math.random() * 0xffffffff);
-            mem.set(request.addr, data);
-            this.updateMemString(mem);
-          }
+          const data = this.getMemEntry(request.addr);
           await this.send_response(this.encoder, this.connection.writer, {
             command: "Read",
-            data: mem.get(request.addr) || 0,
+            data: data,
             crc: 0,
           });
           break;
@@ -126,6 +122,14 @@ export class UartServerModel {
   log(message: string) {
     if (this.logger) {
       this.logger(message);
+    }
+  }
+
+  getMemEntry(addr: number): number {
+    if (!this.mem.has(addr)) {
+      return Math.floor(Math.random() * 0xffffffff);
+    } else {
+      return this.mem.get(addr) || 0;
     }
   }
 
