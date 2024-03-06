@@ -1,0 +1,7 @@
+= Web Serial UART
+
+This repository is a proof-of-concept for:
+
+* TypeScript library
+* Web Serial API
+* Plugins (dynamically load arbitrary code at evaluation time)
