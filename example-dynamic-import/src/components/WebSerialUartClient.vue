@@ -1,26 +1,28 @@
 <script setup lang="ts">
 import TextInputLabel from './TextInputLabel.vue';
 import TextAreaLabel from './TextAreaLabel.vue';
+import { RegvueHardwareClientInterface } from 'regvue-hardware-client-interface';
 import { ref } from 'vue';
 
 const log = ref("");
 const addr = ref("0x00000000");
 const data = ref("0x55555555");
-const client = ref<any>(null);
 const isConnected = ref(false);
+
+let client: RegvueHardwareClientInterface | null = null;
 
 async function connect() {
   const path = "./re-uart.js";
   const href = new URL(path, window.location.href).href
   const {UartClient} = await import(/*@vite-ignore*/ href);
-  client.value = new UartClient(logMessage);
-  await client.value.connect();
+  client = new UartClient(logMessage);
+  await client?.connect();
   isConnected.value = true;
 }
 
 async function disconnect() {
   try {
-    await client.value.disconnect();
+    await client?.disconnect();
   } finally {
     isConnected.value = false;
   }
@@ -33,16 +35,16 @@ function logMessage(message: string) {
   log.value += timestamp() + " " + message;
 }
 
-async function performWrite() {
+async function write() {
   const laddr = parseInt(addr.value);
   const ldata = parseInt(data.value);
-  await client.value.performWrite(laddr, ldata);
+  await client?.write(laddr, ldata);
 }
 
-async function performRead() {
+async function read() {
   const laddr = parseInt(addr.value);
-  const ldata = await client.value.performRead(laddr);
-  data.value = "0x" + ldata.toString(16).padStart(8, "0");
+  const ldata = await client?.read(laddr);
+  data.value = "0x" + ldata?.toString(16).padStart(8, "0");
 }
 
 function timestamp() {
@@ -78,14 +80,14 @@ function timestamp() {
             p-2 bg-sky-500 rounded-l-lg rounded-r-none
             focus:outline-sky-700
           "
-          @click="performWrite"
+          @click="write"
         >W</button>
         <button type="button"
           class="
             p-2 bg-sky-500 rounded-l-none rounded-r-lg
             focus:outline-sky-700
           "
-          @click="performRead"
+          @click="read"
         >R</button>
       </div>
       <TextAreaLabel class="mt-10" label="Log" v-model="log"/>

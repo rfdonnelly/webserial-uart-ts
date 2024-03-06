@@ -6,6 +6,7 @@ import {
 } from "./packets.ts";
 import { RequestEncoder } from "./request_encoder.ts";
 import { ResponseDecoder } from "./response_decoder.ts";
+import { RegvueHardwareClientInterface } from "regvue-hardware-client-interface";
 
 interface Connection {
   port: SerialPort;
@@ -17,7 +18,10 @@ interface Connection {
 
 type Logger = (message: string) => void;
 
-export class UartClient {
+export class UartClient implements RegvueHardwareClientInterface {
+  name = "Register Explorer UART";
+  description = "Client for the Register Explorer UART protocol";
+
   connection: Connection | null;
   encoder: RequestEncoder;
   logger?: Logger;
@@ -70,8 +74,8 @@ export class UartClient {
     }
   }
 
-  async performWrite(addr: number, data: number) {
-    await this.write({
+  async write(addr: number, data: number) {
+    await this.writeRequest({
       command: "Write",
       addr: addr,
       data: data,
@@ -79,20 +83,20 @@ export class UartClient {
     });
 
     try {
-      await this.read();
+      await this.readResponse();
     } catch {
       // Ignore
     }
   }
 
-  async performRead(addr: number): Promise<number> {
-    await this.write({
+  async read(addr: number): Promise<number> {
+    await this.writeRequest({
       command: "Read",
       addr: addr,
       crc: 0,
     });
     try {
-      const response = await this.read();
+      const response = await this.readResponse();
       if (response.command === "Read") {
         return response.data;
       } else {
@@ -103,7 +107,7 @@ export class UartClient {
     }
   }
 
-  async write(request: Request) {
+  async writeRequest(request: Request) {
     request.bytes = this.encoder.encode(request);
     this.log("Request " + requestToString(request));
 
@@ -112,10 +116,10 @@ export class UartClient {
     }
   }
 
-  async read(): Promise<Response> {
+  async readResponse(): Promise<Response> {
     try {
       const response = await Promise.race<Response>([
-        this.readWithoutTimeout(),
+        this.readResponseWithoutTimeout(),
         this.responseTimeout(1000),
       ]);
       return response;
@@ -136,7 +140,7 @@ export class UartClient {
     });
   }
 
-  async readWithoutTimeout(): Promise<Response> {
+  async readResponseWithoutTimeout(): Promise<Response> {
     if (!this.connection) {
       throw new Error("Attempt to read a response without a connection");
     }

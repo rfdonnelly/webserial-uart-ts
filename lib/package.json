@@ -22,6 +22,7 @@
     "rome:format": "rome format --write ."
   },
   "dependencies": {
+    "regvue-hardware-client-interface": "file:../regvue_hardware_client_interface",
     "@types/w3c-web-serial": "^1.0.6"
   },
   "devDependencies": {
