@@ -6,7 +6,7 @@ import {
 } from "./packets.ts";
 import { RequestEncoder } from "./request_encoder.ts";
 import { ResponseDecoder } from "./response_decoder.ts";
-import { RegvueHardwareClientInterface, ReadResponseCallback, LogCallback } from "regvue-hardware-client-interface";
+import { Adapter, AdapterConstructor, AdapterConstructorParams, AccessCallback, LogCallback } from "regvue-adapter";
 
 interface Connection {
   port: SerialPort;
@@ -16,19 +16,19 @@ interface Connection {
   decoder: TransformStream<Uint8Array, Response>;
 }
 
-export class UartClient implements RegvueHardwareClientInterface {
+export const Client: AdapterConstructor = class Client implements Adapter {
   name = "Register Explorer UART";
   description = "Client for the Register Explorer UART protocol";
 
   connection: Connection | null;
   encoder: RequestEncoder;
-  logger?: LogCallback;
-  receivedReadResponse: ReadResponseCallback;
+  logCallback?: LogCallback;
+  accessCallback?: AccessCallback;
 
-  constructor(receivedReadResponse: ReadResponseCallback, logger?: LogCallback) {
+  constructor({accessCallback, logCallback}: AdapterConstructorParams) {
     this.connection = null;
-    this.logger = logger;
-    this.receivedReadResponse = receivedReadResponse;
+    this.logCallback = logCallback;
+    this.accessCallback = accessCallback;
     this.encoder = new RequestEncoder();
   }
 
@@ -83,13 +83,24 @@ export class UartClient implements RegvueHardwareClientInterface {
     });
 
     try {
-      await this.readResponse();
+      const response = await this.readResponse();
+      if (response.command == "Write") {
+        if (this.accessCallback) {
+          this.accessCallback({
+            type: "Write",
+            addr: addr,
+            data: data
+          });
+        }
+      } else {
+        throw "invalid";
+      }
     } catch {
       // Ignore
     }
   }
 
-  async read(addr: number) {
+  async read(addr: number): Promise<number> {
     await this.writeRequest({
       command: "Read",
       addr: addr,
@@ -98,7 +109,14 @@ export class UartClient implements RegvueHardwareClientInterface {
     try {
       const response = await this.readResponse();
       if (response.command === "Read") {
-        this.receivedReadResponse(addr, response.data);
+        if (this.accessCallback) {
+          this.accessCallback({
+            type: "Read",
+            addr: addr,
+            data: response.data
+          });
+        }
+        return response.data;
       } else {
         throw "invalid";
       }
@@ -157,8 +175,10 @@ export class UartClient implements RegvueHardwareClientInterface {
   }
 
   log(message: string) {
-    if (this.logger) {
-      this.logger(message);
+    if (this.logCallback) {
+      this.logCallback(message);
+    } else {
+      console.log(message);
     }
   }
 }

@@ -16,7 +16,7 @@
     "@heroicons/vue": "^2.1.1",
     "@types/w3c-web-serial": "^1.0.6",
     "vue": "^3.4.21",
-    "regvue-hardware-client-interface": "file:../regvue_hardware_client_interface"
+    "regvue-adapter": "file:../../regvue-webserial/regvue-adapter"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",

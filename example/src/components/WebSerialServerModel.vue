@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import TextAreaLabel from './TextAreaLabel.vue';
-import { UartServerModel } from 're-uart';
+import { ServerModel } from 'register-explorer-adapter';
 import { ref } from 'vue';
 
 const log = ref("");
 const memString = ref("");
-const serverModel = new UartServerModel(logMessage, updateMemCallback);
+const serverModel = new ServerModel(logMessage, updateMemCallback);
 const isConnected = ref(false);
 
 async function connect() {

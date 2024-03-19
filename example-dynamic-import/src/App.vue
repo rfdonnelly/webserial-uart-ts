@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import WebSerialUartClient from './components/WebSerialUartClient.vue'
-import WebSerialUartServerModel from './components/WebSerialUartServerModel.vue'
+import WebSerialClient from './components/WebSerialClient.vue'
+import WebSerialServerModel from './components/WebSerialServerModel.vue'
 </script>
 
 <template>
   <h1 class="text-xl mt-10">Client</h1>
-  <WebSerialUartClient/>
+  <WebSerialClient/>
   <h1 class="text-xl mt-10">Model</h1>
-  <WebSerialUartServerModel/>
+  <WebSerialServerModel/>
 </template>
 
 <style scoped>

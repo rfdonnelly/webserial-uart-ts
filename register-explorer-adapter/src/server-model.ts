@@ -17,7 +17,7 @@ interface Connection {
 
 type Logger = (message: string) => void;
 
-export class UartServerModel {
+export class ServerModel {
   connection: Connection | null;
   encoder: ResponseEncoder;
   logger?: Logger;

@@ -10,8 +10,8 @@ export default defineConfig({
     sourcemap: true,
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
-      name: "re-uart",
-      fileName: "index",
+      name: "RegisterExplorerAdapter",
+      fileName: "register-explorer",
       formats: ["cjs", "es"],
     },
   },

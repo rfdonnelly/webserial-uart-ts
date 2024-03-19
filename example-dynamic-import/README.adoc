@@ -25,14 +25,14 @@ NOTE: Should add Vite path alias to simplify the path handling.
 [source,sh]
 .Build
 ----
-(cd ../lib && npm install && npm run build)
+(cd ../register-explorer-adapter && npm install && npm run build)
 ----
 
 [source,sh]
 .Copy
 ----
 mkdir public
-cp ../lib/dist/index.js public/re-uart.js
+cp ../register-explorer-adapter/dist/register-explorer.js public/register-explorer.js
 ----
 
 == Build and Serve Example

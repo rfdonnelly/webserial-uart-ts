@@ -1,34 +1,29 @@
 <script setup lang="ts">
 import TextInputLabel from './TextInputLabel.vue';
 import TextAreaLabel from './TextAreaLabel.vue';
-import { RegvueHardwareClientInterface } from 'regvue-hardware-client-interface';
+import { Client } from 'register-explorer-adapter';
 import { ref } from 'vue';
 
 const log = ref("");
 const addr = ref("0x00000000");
 const data = ref("0x55555555");
+const client = new Client({logCallback});
 const isConnected = ref(false);
 
-let client: RegvueHardwareClientInterface | null = null;
-
 async function connect() {
-  const path = "./re-uart.js";
-  const href = new URL(path, window.location.href).href
-  const {UartClient} = await import(/*@vite-ignore*/ href);
-  client = new UartClient(receivedReadResponse, logMessage);
-  await client?.connect();
+  await client.connect();
   isConnected.value = true;
 }
 
 async function disconnect() {
   try {
-    await client?.disconnect();
+    await client.disconnect();
   } finally {
     isConnected.value = false;
   }
 }
 
-function logMessage(message: string) {
+function logCallback(message: string) {
   if (log.value != "") {
       log.value += "\n";
   }
@@ -38,17 +33,13 @@ function logMessage(message: string) {
 async function write() {
   const laddr = parseInt(addr.value);
   const ldata = parseInt(data.value);
-  await client?.write(laddr, ldata);
+  await client.write(laddr, ldata);
 }
 
 async function read() {
   const laddr = parseInt(addr.value);
-  await client?.read(laddr);
-}
-
-function receivedReadResponse(_addr: number, value: number) {
-    console.log(_addr, value);
-  data.value = "0x" + value.toString(16).padStart(8, "0");
+  const readData = await client.read(laddr);
+  data.value = "0x" + readData.toString(16).padStart(8, "0");
 }
 
 function timestamp() {
