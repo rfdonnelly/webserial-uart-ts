@@ -93,7 +93,7 @@ export const Client: AdapterConstructor = class Client implements Adapter {
           });
         }
       } else {
-        throw "invalid";
+        throw "Expected a Write response but received a " + response.command + " response.";
       }
     } catch {
       // Ignore
@@ -118,7 +118,7 @@ export const Client: AdapterConstructor = class Client implements Adapter {
         }
         return response.data;
       } else {
-        throw "invalid";
+        throw "Expected a Read response but received a " + response.command + " response.";
       }
     } catch (e) {
       throw e;
