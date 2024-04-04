@@ -16,6 +16,14 @@ interface Connection {
   decoder: TransformStream<Uint8Array, Response>;
 }
 
+interface Options {
+  baudRate: number;
+  parity: ParityType;
+  crcInit: number;
+  crcPoly: number;
+  crcReflect: boolean;
+}
+
 export const Client: AdapterConstructor = class Client implements Adapter {
   name = "Register Explorer UART";
   description = "Client for the Register Explorer UART protocol";
@@ -25,18 +33,68 @@ export const Client: AdapterConstructor = class Client implements Adapter {
   logCallback?: LogCallback;
   accessCallback?: AccessCallback;
 
-  constructor({accessCallback, logCallback}: AdapterConstructorParams) {
+  opts: Options;
+
+  constructor({options, accessCallback, logCallback}: AdapterConstructorParams) {
     this.connection = null;
     this.logCallback = logCallback;
     this.accessCallback = accessCallback;
     this.encoder = new RequestEncoder();
+    this.opts = this.parseOptions(options);
+  }
+
+  defaultOptions(): Options {
+    return {
+      baudRate: 115200,
+      parity: "odd",
+      crcInit: 0,
+      crcPoly: 0,
+      crcReflect: false,
+    };
+  }
+
+  parseOptions(options?: Map<string, string>): Options {
+    let opts = this.defaultOptions();
+
+    if (options) {
+      options.forEach((v, k) => {
+        switch (k) {
+          case "baudRate":
+            opts.baudRate = parseInt(v);
+          break;
+          case "parity":
+            opts.parity = this.parseEnumeratedValue(k, v, ["odd", "even", "none"]) as ParityType;
+          break;
+          case "crcInit":
+            opts.crcInit = parseInt(v);
+          break;
+          case "crcPoly":
+            opts.crcPoly = parseInt(v);
+          break;
+          case "crcReflect":
+            opts.crcReflect = this.parseEnumeratedValue(k, v, ["0", "1"]) === "1";
+          break;
+          default:
+            throw new Error("Invalid option: '" + k + "'");
+        }
+      });
+    }
+
+    return opts;
+  }
+
+  parseEnumeratedValue(name: string, value: string, validValues: string[]): string {
+    if (!validValues.includes(value)) {
+      throw new Error("Invalid " + name + " value '" + value + "'.  Valid values: " + validValues.join(" "));
+    }
+    return value;
   }
 
   async connect() {
     const port = await navigator.serial.requestPort();
     await port.open({
-      baudRate: 115200,
-      parity: "odd",
+      baudRate: this.opts.baudRate,
+      parity: this.opts.parity,
     });
 
     if (!port.readable || !port.writable) {
