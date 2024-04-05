@@ -1,13 +1,14 @@
 import { beforeEach, it, expect } from "vitest";
 import { RequestEncoder } from "/src/request_encoder.ts";
 import { CommandValue, SYNC_MARKER } from "/src/fields.ts";
+import { Crc } from "/src/crc.ts";
 
 interface Ctxt {
   o: RequestEncoder;
 }
 
 beforeEach<Ctxt>(async (context) => {
-  context.o = new RequestEncoder();
+  context.o = new RequestEncoder(Crc.default());
 });
 
 it<Ctxt>("read", ({ o }) => {

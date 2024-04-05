@@ -4,6 +4,7 @@ import {
   Request,
   Response,
 } from "./packets.ts";
+import { Crc } from "./crc.ts";
 import { RequestEncoder } from "./request_encoder.ts";
 import { ResponseDecoder } from "./response_decoder.ts";
 import { Adapter, AdapterConstructor, AdapterConstructorParams, AccessCallback, LogCallback } from "regvue-adapter";
@@ -28,6 +29,7 @@ export const Client: AdapterConstructor = class Client implements Adapter {
   name = "Register Explorer UART";
   description = "Client for the Register Explorer UART protocol";
 
+  crc: Crc;
   connection: Connection | null;
   encoder: RequestEncoder;
   logCallback?: LogCallback;
@@ -39,16 +41,17 @@ export const Client: AdapterConstructor = class Client implements Adapter {
     this.connection = null;
     this.logCallback = logCallback;
     this.accessCallback = accessCallback;
-    this.encoder = new RequestEncoder();
     this.opts = this.parseOptions(options);
+    this.crc = new Crc(opts.crcInit, opts.crcPoly, opts.crcReflect);
+    this.encoder = new RequestEncoder(this.crc);
   }
 
   defaultOptions(): Options {
     return {
       baudRate: 115200,
       parity: "odd",
-      crcInit: 0,
-      crcPoly: 0,
+      crcInit: 0x47,
+      crcPoly: 0x8d,
       crcReflect: false,
     };
   }
@@ -137,6 +140,7 @@ export const Client: AdapterConstructor = class Client implements Adapter {
       command: "Write",
       addr: addr,
       data: data,
+      // Encoder encodes a good CRC for us
       crc: 0,
     });
 
@@ -162,6 +166,7 @@ export const Client: AdapterConstructor = class Client implements Adapter {
     await this.writeRequest({
       command: "Read",
       addr: addr,
+      // Encoder encodes a good CRC for us
       crc: 0,
     });
     try {

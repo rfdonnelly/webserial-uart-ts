@@ -4,6 +4,7 @@ import {
   Request,
   Response,
 } from "./packets";
+import { Crc } from "./crc.ts";
 import { RequestDecoder } from "./request_decoder";
 import { ResponseEncoder } from "./response_encoder";
 
@@ -28,7 +29,7 @@ export class ServerModel {
     this.connection = null;
     this.logger = logger;
     this.updateMemCallback = updateMemCallback;
-    this.encoder = new ResponseEncoder();
+    this.encoder = new ResponseEncoder(Crc.default());
     this.mem = new Map();
   }
 

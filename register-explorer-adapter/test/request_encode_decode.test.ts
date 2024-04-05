@@ -1,6 +1,7 @@
 import { beforeEach, it, expect } from "vitest";
 import { RequestEncoder } from "/src/request_encoder.ts";
 import { RequestDecoder } from "/src/request_decoder.ts";
+import { Crc } from "/src/crc.ts";
 
 interface Ctxt {
   encoder: RequestEncoder;
@@ -8,7 +9,7 @@ interface Ctxt {
 }
 
 beforeEach<Ctxt>(async (ctxt) => {
-  ctxt.encoder = new RequestEncoder();
+  ctxt.encoder = new RequestEncoder(Crc.default());
   ctxt.decoder = new RequestDecoder();
 });
 

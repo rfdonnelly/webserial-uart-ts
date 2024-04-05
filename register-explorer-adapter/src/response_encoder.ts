@@ -1,8 +1,14 @@
 import { command_value, response_length, SYNC_MARKER } from "./fields.ts";
 import { Response } from "./packets.ts";
-import { crc } from "./crc.ts";
+import { Crc } from "./crc.ts";
 
 export class ResponseEncoder {
+  crc: Crc;
+
+  constructor(crc: Crc) {
+    this.crc = crc;
+  }
+
   encode(response: Response): Uint8Array {
     const length = response_length(response.command);
     const bytes = new Uint8Array(length);
@@ -16,7 +22,7 @@ export class ResponseEncoder {
         bytes[byte_idx++] = view.getUint8(3 - i);
       }
     }
-    bytes[byte_idx++] = crc(bytes.slice(0, length - 1));
+    bytes[byte_idx++] = this.crc.calculate(bytes.slice(0, length - 1));
 
     return bytes;
   }

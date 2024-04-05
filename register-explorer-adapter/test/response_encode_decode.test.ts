@@ -1,6 +1,7 @@
 import { beforeEach, it, expect } from "vitest";
 import { ResponseEncoder } from "/src/response_encoder.ts";
 import { ResponseDecoder } from "/src/response_decoder.ts";
+import { Crc } from "/src/crc.ts";
 
 interface Ctxt {
   encoder: ResponseEncoder;
@@ -8,7 +9,7 @@ interface Ctxt {
 }
 
 beforeEach<Ctxt>(async (ctxt) => {
-  ctxt.encoder = new ResponseEncoder();
+  ctxt.encoder = new ResponseEncoder(Crc.default());
   ctxt.decoder = new ResponseDecoder();
 });
 
