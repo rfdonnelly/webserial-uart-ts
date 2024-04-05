@@ -42,7 +42,7 @@ export const Client: AdapterConstructor = class Client implements Adapter {
     this.logCallback = logCallback;
     this.accessCallback = accessCallback;
     this.opts = this.parseOptions(options);
-    this.crc = new Crc(opts.crcInit, opts.crcPoly, opts.crcReflect);
+    this.crc = new Crc(this.opts.crcInit, this.opts.crcPoly, this.opts.crcReflect);
     this.encoder = new RequestEncoder(this.crc);
   }
 
@@ -146,7 +146,7 @@ export const Client: AdapterConstructor = class Client implements Adapter {
 
     try {
       const response = await this.readResponse();
-      if (crc.calculate(response.bytes) != 0) {
+      if (this.crc.calculate(response.bytes as Uint8Array) != 0) {
         throw new Error("Bad CRC in response");
       }
       if (response.command == "Write") {
@@ -174,7 +174,7 @@ export const Client: AdapterConstructor = class Client implements Adapter {
     });
     try {
       const response = await this.readResponse();
-      if (crc.calculate(response.bytes) != 0) {
+      if (this.crc.calculate(response.bytes as Uint8Array) != 0) {
         throw new Error("Bad CRC in response");
       }
       if (response.command === "Read") {
