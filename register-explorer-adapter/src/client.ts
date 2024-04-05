@@ -7,7 +7,13 @@ import {
 import { Crc } from "./crc.ts";
 import { RequestEncoder } from "./request_encoder.ts";
 import { ResponseDecoder } from "./response_decoder.ts";
-import { Adapter, AdapterConstructor, AdapterConstructorParams, AccessCallback, LogCallback } from "regvue-adapter";
+import {
+  Adapter,
+  AdapterConstructor,
+  AdapterConstructorParams,
+  AccessCallback,
+  LogCallback,
+} from "regvue-adapter";
 
 interface Connection {
   port: SerialPort;
@@ -37,12 +43,20 @@ export const Client: AdapterConstructor = class Client implements Adapter {
 
   opts: Options;
 
-  constructor({options, accessCallback, logCallback}: AdapterConstructorParams) {
+  constructor({
+    options,
+    accessCallback,
+    logCallback,
+  }: AdapterConstructorParams) {
     this.connection = null;
     this.logCallback = logCallback;
     this.accessCallback = accessCallback;
     this.opts = this.parseOptions(options);
-    this.crc = new Crc(this.opts.crcInit, this.opts.crcPoly, this.opts.crcReflect);
+    this.crc = new Crc(
+      this.opts.crcInit,
+      this.opts.crcPoly,
+      this.opts.crcReflect,
+    );
     this.encoder = new RequestEncoder(this.crc);
   }
 
@@ -64,19 +78,24 @@ export const Client: AdapterConstructor = class Client implements Adapter {
         switch (k) {
           case "baudRate":
             opts.baudRate = parseInt(v);
-          break;
+            break;
           case "parity":
-            opts.parity = this.parseEnumeratedValue(k, v, ["odd", "even", "none"]) as ParityType;
-          break;
+            opts.parity = this.parseEnumeratedValue(k, v, [
+              "odd",
+              "even",
+              "none",
+            ]) as ParityType;
+            break;
           case "crcInit":
             opts.crcInit = parseInt(v);
-          break;
+            break;
           case "crcPoly":
             opts.crcPoly = parseInt(v);
-          break;
+            break;
           case "crcReflect":
-            opts.crcReflect = this.parseEnumeratedValue(k, v, ["0", "1"]) === "1";
-          break;
+            opts.crcReflect =
+              this.parseEnumeratedValue(k, v, ["0", "1"]) === "1";
+            break;
           default:
             throw new Error("Invalid option: '" + k + "'");
         }
@@ -86,9 +105,20 @@ export const Client: AdapterConstructor = class Client implements Adapter {
     return opts;
   }
 
-  parseEnumeratedValue(name: string, value: string, validValues: string[]): string {
+  parseEnumeratedValue(
+    name: string,
+    value: string,
+    validValues: string[],
+  ): string {
     if (!validValues.includes(value)) {
-      throw new Error("Invalid " + name + " value '" + value + "'.  Valid values: " + validValues.join(" "));
+      throw new Error(
+        "Invalid " +
+          name +
+          " value '" +
+          value +
+          "'.  Valid values: " +
+          validValues.join(" "),
+      );
     }
     return value;
   }
@@ -154,11 +184,15 @@ export const Client: AdapterConstructor = class Client implements Adapter {
           this.accessCallback({
             type: "Write",
             addr: addr,
-            data: data
+            data: data,
           });
         }
       } else {
-        throw new Error("Expected a Write response but received a " + response.command + " response.");
+        throw new Error(
+          "Expected a Write response but received a " +
+            response.command +
+            " response.",
+        );
       }
     } catch {
       // Ignore
@@ -182,12 +216,16 @@ export const Client: AdapterConstructor = class Client implements Adapter {
           this.accessCallback({
             type: "Read",
             addr: addr,
-            data: response.data
+            data: response.data,
           });
         }
         return response.data;
       } else {
-        throw new Error("Expected a Read response but received a " + response.command + " response.");
+        throw new Error(
+          "Expected a Read response but received a " +
+            response.command +
+            " response.",
+        );
       }
     } catch (e) {
       throw e;
@@ -250,4 +288,4 @@ export const Client: AdapterConstructor = class Client implements Adapter {
       console.log(message);
     }
   }
-}
+};
