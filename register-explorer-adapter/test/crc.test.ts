@@ -14,3 +14,9 @@ it("crc-hw-actual", () => {
 it("crc-hw-expected", () => {
   expect(Crc.default().calculate(new Uint8Array([0x47, 0x30, 0x00, 0x00, 0x00, 0x00]))).toBe(0x7e);
 });
+
+it("crc good zero", () => {
+  expect(
+    Crc.default().calculate(new Uint8Array([0x47, 0x50, 0x00, 0x01, 0x12, 0x34, 0x56, 0x78, 0xe9])),
+  ).toBe(0x00);
+});

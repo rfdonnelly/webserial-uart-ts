@@ -146,6 +146,9 @@ export const Client: AdapterConstructor = class Client implements Adapter {
 
     try {
       const response = await this.readResponse();
+      if (crc.calculate(response.bytes) != 0) {
+        throw new Error("Bad CRC in response");
+      }
       if (response.command == "Write") {
         if (this.accessCallback) {
           this.accessCallback({
@@ -171,6 +174,9 @@ export const Client: AdapterConstructor = class Client implements Adapter {
     });
     try {
       const response = await this.readResponse();
+      if (crc.calculate(response.bytes) != 0) {
+        throw new Error("Bad CRC in response");
+      }
       if (response.command === "Read") {
         if (this.accessCallback) {
           this.accessCallback({
