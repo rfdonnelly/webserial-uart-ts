@@ -202,29 +202,26 @@ export const Client: AdapterConstructor = class Client implements Adapter {
       // Encoder encodes a good CRC for us
       crc: 0,
     });
-    try {
-      const response = await this.readResponse();
-      if (this.crc.calculate(response.bytes as Uint8Array) != 0) {
-        throw new Error("Bad CRC in response");
+
+    const response = await this.readResponse();
+    if (this.crc.calculate(response.bytes as Uint8Array) != 0) {
+      throw new Error("Bad CRC in response");
+    }
+    if (response.command === "Read") {
+      if (this.accessCallback) {
+        this.accessCallback({
+          type: "Read",
+          addr: addr,
+          data: response.data,
+        });
       }
-      if (response.command === "Read") {
-        if (this.accessCallback) {
-          this.accessCallback({
-            type: "Read",
-            addr: addr,
-            data: response.data,
-          });
-        }
-        return response.data;
-      } else {
-        throw new Error(
-          "Expected a Read response but received a " +
-            response.command +
-            " response.",
-        );
-      }
-    } catch (e) {
-      throw e;
+      return response.data;
+    } else {
+      throw new Error(
+        "Expected a Read response but received a " +
+          response.command +
+          " response.",
+      );
     }
   }
 
