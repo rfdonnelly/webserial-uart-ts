@@ -153,7 +153,7 @@ export const Client: AdapterConstructor = class Client implements Adapter {
   async disconnect() {
     if (this.connection) {
       this.connection.writer.releaseLock();
-      await this.connection.reader.cancel().catch(() => {
+      await this.connection.reader.cancel("disconnect").catch(() => {
         // Ignore error
       });
       await this.connection.readerClosed.catch(() => {
