@@ -242,21 +242,11 @@ export const Client: AdapterConstructor = class Client implements Adapter {
   }
 
   async readResponse(): Promise<Response> {
-    try {
-      const response = await Promise.race<Response>([
-        this.readResponseWithoutTimeout(),
-        this.responseTimeout(1000),
-      ]);
-      return response;
-    } catch (e) {
-      if (this.connection) {
-        await this.connection.reader.cancel().catch(() => {
-          // Ignore error
-        });
-      }
-      this.log((e as Error).message);
-      throw e;
-    }
+    const response = await Promise.race<Response>([
+      this.readResponseWithoutTimeout(),
+      this.responseTimeout(1000),
+    ]);
+    return response;
   }
 
   async responseTimeout(ms: number): Promise<never> {
